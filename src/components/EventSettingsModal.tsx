@@ -17,7 +17,8 @@ import {
   HelpCircle,
   Upload,
   Sparkles,
-  Eye
+  Eye,
+  Video
 } from 'lucide-react';
 import { CondoEvent } from '../types';
 import { updateEvent, createEvent, deleteEvent, changeAdminPassword, uploadImage } from '../lib/api';
@@ -65,6 +66,7 @@ export const EventSettingsModal: React.FC<Props> = ({
   const [location, setLocation] = useState(currentEvent?.location || '');
   const [address, setAddress] = useState(currentEvent?.address || DEFAULT_EVENT_ADDRESS);
   const [bannerUrl, setBannerUrl] = useState(currentEvent?.bannerUrl || '');
+  const [videoUrl, setVideoUrl] = useState(currentEvent?.videoUrl || '');
   const [logoUrl, setLogoUrl] = useState(currentEvent?.logoUrl || '');
   const [presentationText, setPresentationText] = useState(currentEvent?.presentationText || '');
   const [requireJanitor, setRequireJanitor] = useState(currentEvent?.requireJanitor || false);
@@ -124,6 +126,7 @@ export const EventSettingsModal: React.FC<Props> = ({
       setLocation(currentEvent.location || '');
       setAddress(currentEvent.address || DEFAULT_EVENT_ADDRESS);
       setBannerUrl(currentEvent.bannerUrl || '');
+      setVideoUrl(currentEvent.videoUrl || '');
       setLogoUrl(currentEvent.logoUrl || '');
       setPresentationText(currentEvent.presentationText || '');
       setRequireJanitor(currentEvent.requireJanitor || false);
@@ -160,6 +163,7 @@ export const EventSettingsModal: React.FC<Props> = ({
         location,
         address,
         bannerUrl: finalBannerUrl,
+        videoUrl: videoUrl.trim() || undefined,
         logoUrl,
         presentationText,
         requireJanitor,
@@ -505,6 +509,27 @@ export const EventSettingsModal: React.FC<Props> = ({
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Link do Vídeo Convite */}
+                <div className="pt-3 border-t border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Video size={14} className="text-pink-600" />
+                      <span>Link do Vídeo Convite</span>
+                    </label>
+                    <span className="text-[10px] text-slate-500 font-normal">MP4, YouTube ou link direto</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="/covers/convite-lorena.mp4 ou https://..."
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 font-mono"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Cole uma URL de vídeo MP4, link do YouTube ou deixe <code>/covers/convite-lorena.mp4</code> para usar o vídeo principal da Lorena.
+                  </p>
                 </div>
               </div>
 

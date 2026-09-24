@@ -9,7 +9,7 @@
       "location": "Salão Happy Day Kids",
       "address": "Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos",
       "bannerUrl": "https://i.ibb.co/ksBFdWSv/eeese.png",
-      "videoUrl": "/covers/convite-lorena.mp4",
+      "videoUrl": "https://drive.google.com/file/d/18ax6K0uWkilr6jUnMFbIF9worrS01cCD/view?usp=sharing",
       "logoUrl": "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=300&q=80",
       "presentationText": "Bem-vindo ao Aniversário da Lorena! Assista ao vídeo e confirme sua presença.",
       "shareTitle": "Aniversário da Lorena (9 Anos) | Convite Especial",
@@ -35,21 +35,21 @@
           "actionType": "confirm_rsvp",
           "targetUrl": "#formulario",
           "openInNewTab": false,
-          "x": 5.6,
-          "y": 64.5,
-          "width": 43.4,
-          "height": 6
+          "x": 10.5,
+          "y": 85.5,
+          "width": 37,
+          "height": 5.8
         },
         {
           "id": "hs-2",
           "name": "Saber Como Chegar",
           "actionType": "google_maps",
-          "targetUrl": "https://maps.google.com/?q=Sal%C3%A3o%20Happy%20Day%20Kids%2C%20Rua%20Cachoeira%2C%20n%C2%BA%2034%2C%20Jardim%20Rosa%20de%20Fran%C3%A7a%2C%20Guarulhos",
+          "targetUrl": "https://maps.google.com/?q=Rua%20Cachoeira%2C%20n%C2%BA%2034%2C%20Jardim%20Rosa%20de%20Fran%C3%A7a%2C%20Guarulhos",
           "openInNewTab": true,
-          "x": 51.3,
-          "y": 64.4,
-          "width": 43.3,
-          "height": 6
+          "x": 52.5,
+          "y": 85.5,
+          "width": 37,
+          "height": 5.8
         }
       ]
     }

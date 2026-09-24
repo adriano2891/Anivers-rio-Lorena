@@ -33,7 +33,7 @@ export const InteractiveCoverViewer: React.FC<Props> = ({
   const [activeFeedbackId, setActiveFeedbackId] = useState<string | null>(null);
   const [currentSrc, setCurrentSrc] = useState<string>(imageUrl || '/covers/default-cover.png');
   const [hasError, setHasError] = useState<boolean>(false);
-  const [aspectRatio, setAspectRatio] = useState<number>(1054 / 1492);
+  const [aspectRatio, setAspectRatio] = useState<number>(9 / 16);
 
   useEffect(() => {
     setCurrentSrc(imageUrl || '/covers/default-cover.png');
@@ -145,52 +145,35 @@ export const InteractiveCoverViewer: React.FC<Props> = ({
 
   return (
     <div
-      className={`relative w-full h-full max-h-[100dvh] flex items-center justify-center overflow-hidden select-none ${className}`}
-      style={{ touchAction: 'pan-y' }}
+      ref={containerRef}
+      className={`relative select-none w-full h-full flex items-center justify-center overflow-hidden ${className}`}
+      style={{
+        aspectRatio: `${aspectRatio}`,
+        touchAction: 'pan-y'
+      }}
     >
-      {/* Ambient backdrop that fills 100% of height and width on mobile screens to eliminate black borders */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none sm:hidden">
-        <img
-          src={currentSrc}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover blur-2xl opacity-40 scale-125"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-white/80" />
-      </div>
-
-      {/* Sized container that matches the exact rendered image dimensions for pixel-perfect hotspot alignment */}
-      <div
-        ref={containerRef}
-        className="relative select-none max-w-full max-h-[100dvh] w-full flex items-center justify-center"
-        style={{
-          aspectRatio: `${aspectRatio}`,
-          maxHeight: '100dvh',
-          maxWidth: '100vw'
+      {/* Main sharp cover image */}
+      <img
+        src={currentSrc}
+        alt={altText}
+        referrerPolicy="no-referrer"
+        onError={handleImageError}
+        onLoad={(e) => {
+          const target = e.currentTarget;
+          if (target.naturalWidth && target.naturalHeight) {
+            setAspectRatio(target.naturalWidth / target.naturalHeight);
+          }
+          if (onImageLoad) {
+            onImageLoad({
+              naturalWidth: target.naturalWidth,
+              naturalHeight: target.naturalHeight
+            });
+          }
         }}
-      >
-        {/* Main sharp cover image */}
-        <img
-          src={currentSrc}
-          alt={altText}
-          referrerPolicy="no-referrer"
-          onError={handleImageError}
-          onLoad={(e) => {
-            const target = e.currentTarget;
-            if (target.naturalWidth && target.naturalHeight) {
-              setAspectRatio(target.naturalWidth / target.naturalHeight);
-            }
-            if (onImageLoad) {
-              onImageLoad({
-                naturalWidth: target.naturalWidth,
-                naturalHeight: target.naturalHeight
-              });
-            }
-          }}
-          className="w-full h-full max-h-[100dvh] max-w-[100vw] block object-contain pointer-events-none"
-        />
+        className="w-full h-full block object-contain pointer-events-none select-none"
+      />
 
-        {/* Hotspots Overlay Layer */}
+      {/* Hotspots Overlay Layer */}
         {hotspots.map((spot) => {
           const isSelected = selectedHotspotId === spot.id;
           const isFeedback = activeFeedbackId === spot.id;
@@ -274,7 +257,6 @@ export const InteractiveCoverViewer: React.FC<Props> = ({
             </div>
           );
         })}
-      </div>
     </div>
   );
 };

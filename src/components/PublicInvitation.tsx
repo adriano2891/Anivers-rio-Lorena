@@ -118,11 +118,99 @@ export const PublicInvitation: React.FC<Props> = ({
     );
   };
 
-  // Active view: 'video' (Vídeo Convite Principal) or 'cover' (Capa Digital Interativa)
+  // Active view: 'video' (Vídeo Convite) or 'cover' (Capa Digital Interativa)
   const [activeView, setActiveView] = useState<'video' | 'cover'>('video');
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
   const [isVideoEnded, setIsVideoEnded] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [videoHasError, setVideoHasError] = useState<boolean>(false);
+  const [videoProgress, setVideoProgress] = useState<number>(0);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Helper to parse video source (Google Drive, YouTube embed, Vimeo, or direct MP4)
+  const parseVideoSource = (rawUrl?: string): {
+    type: 'youtube' | 'vimeo' | 'direct';
+    embedUrl?: string;
+    directUrl: string;
+    externalUrl?: string;
+  } => {
+    const url = (rawUrl || '').trim() || '/covers/convite-lorena.mp4';
+
+    // Google Drive detection
+    const gDriveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+    if (gDriveMatch && gDriveMatch[1]) {
+      const fileId = gDriveMatch[1];
+      return {
+        type: 'direct',
+        directUrl: '/covers/convite-lorena.mp4',
+        externalUrl: url,
+        embedUrl: `https://drive.google.com/file/d/${fileId}/preview`
+      };
+    }
+
+    // YouTube detection
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      return {
+        type: 'youtube',
+        embedUrl: `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&playsinline=1&rel=0&modestbranding=1`,
+        directUrl: url,
+        externalUrl: url
+      };
+    }
+
+    // Vimeo detection
+    const vimeoMatch = url.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/[^\/]*\/videos\/|album\/(?:\d+\/)?video\/|)(\d+)/);
+    if (vimeoMatch && vimeoMatch[1]) {
+      return {
+        type: 'vimeo',
+        embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&playsinline=1`,
+        directUrl: url,
+        externalUrl: url
+      };
+    }
+
+    return {
+      type: 'direct',
+      directUrl: url,
+      externalUrl: url
+    };
+  };
+
+  const videoSource = parseVideoSource(event?.videoUrl);
+  const externalVideoUrl = videoSource.externalUrl || videoSource.directUrl;
+
+  const handleTogglePlay = async () => {
+    if (!videoRef.current) return;
+    try {
+      if (videoRef.current.paused) {
+        await videoRef.current.play();
+        setIsVideoPlaying(true);
+        setIsVideoEnded(false);
+        setVideoHasError(false);
+      } else {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      }
+    } catch (err: any) {
+      console.warn('Playback with audio restricted by browser policy, attempting muted fallback:', err);
+      try {
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          await videoRef.current.play();
+          setIsVideoPlaying(true);
+          setIsVideoEnded(false);
+          setVideoHasError(false);
+          showToast('Vídeo iniciado sem som. Toque no botão de som para ouvir a Lorena!');
+        }
+      } catch (e2) {
+        console.error('All play attempts failed:', e2);
+        setVideoHasError(true);
+      }
+    }
+  };
 
   // Fullscreen Form State
   const [isFormFullscreenOpen, setIsFormFullscreenOpen] = useState(shouldInitialAutoOpen);
@@ -723,17 +811,17 @@ export const PublicInvitation: React.FC<Props> = ({
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] h-[100dvh] sm:h-auto w-full max-w-full overflow-hidden sm:overflow-x-hidden text-slate-800 p-0 sm:py-6 sm:px-4 md:px-6 flex flex-col justify-between"
+      className="min-h-screen min-h-[100dvh] w-full max-w-full text-slate-800 p-2 sm:p-4 flex flex-col items-center justify-center"
       style={{
         background:
-          'radial-gradient(1100px 700px at 50% 0%, rgba(0, 122, 120, 0.12) 0%, transparent 60%), radial-gradient(850px 550px at 90% 90%, rgba(15, 118, 110, 0.08) 0%, transparent 55%), linear-gradient(165deg, #e6f6f5 0%, #f4faf9 30%, #ffffff 65%, #ddf2f0 100%)'
+          'radial-gradient(1100px 700px at 50% 0%, rgba(244, 114, 182, 0.15) 0%, transparent 60%), radial-gradient(850px 550px at 90% 90%, rgba(56, 189, 248, 0.12) 0%, transparent 55%), linear-gradient(165deg, #fdf2f8 0%, #ffffff 40%, #f0f9ff 100%)'
       }}
     >
-      <div className="w-full h-full min-h-[100dvh] sm:min-h-0 sm:max-w-xl md:max-w-2xl mx-auto flex-1 flex flex-col justify-center sm:space-y-3 sm:space-y-4 sm:my-auto overflow-hidden">
+      <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center my-auto">
 
         {/* Feedback Toast */}
         {toastNotice && (
-          <div className="fixed sm:static top-3 left-3 right-3 z-40 bg-[#007A78] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg flex items-center justify-between animate-fade-in">
+          <div className="fixed top-3 left-3 right-3 z-40 bg-[#007A78] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg flex items-center justify-between animate-fade-in max-w-md mx-auto">
             <div className="flex items-center gap-2">
               <Sparkles size={15} className="text-teal-200 shrink-0" />
               <span>{toastNotice}</span>
@@ -745,7 +833,7 @@ export const PublicInvitation: React.FC<Props> = ({
         )}
 
         {/* Modo Switcher: Vídeo Convite vs Capa Digital */}
-        <div className="flex items-center justify-center gap-1.5 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-pink-200/90 shadow-xs max-w-xs mx-auto mb-1 z-20">
+        <div className="flex items-center justify-center gap-1.5 p-1 bg-white/90 backdrop-blur-md rounded-2xl border border-pink-200/90 shadow-xs max-w-xs w-full mb-2 z-20">
           <button
             type="button"
             onClick={() => {
@@ -775,161 +863,253 @@ export const PublicInvitation: React.FC<Props> = ({
           </button>
         </div>
 
-        {/* Card Principal do Convite com degrade nos tons claros */}
+        {/* Card Principal do Convite com tamanho ajustado perfeitamente à imagem de capa (9:16) */}
         <div
-          className="w-full h-full min-h-[100dvh] sm:min-h-0 rounded-none sm:rounded-3xl overflow-hidden border-0 sm:border border-pink-200/90 shadow-none sm:shadow-2xl flex flex-col justify-center items-center relative"
+          className="relative mx-auto rounded-2xl sm:rounded-3xl overflow-hidden border border-pink-200/90 shadow-2xl bg-white flex flex-col justify-center items-center transition-all duration-300"
           style={{
-            background: 'linear-gradient(155deg, #ffffff 0%, #fff7fa 50%, #f0f9ff 100%)'
+            aspectRatio: '9/16',
+            maxHeight: 'calc(100dvh - 6.8rem)',
+            maxWidth: 'min(calc(100vw - 1.5rem), calc((100dvh - 6.8rem) * 9 / 16), 460px)',
+            width: '100%'
           }}
         >
           {activeView === 'video' ? (
-            /* VÍDEO CONVITE PRINCIPAL DA LORENA */
-            <div className="w-full h-full min-h-[100dvh] sm:min-h-0 flex flex-col items-center justify-center relative bg-slate-950 overflow-hidden">
-              <div className="relative w-full max-w-[420px] aspect-[9/16] max-h-[85vh] flex items-center justify-center bg-black">
-                <video
-                  ref={videoRef}
-                  src={event?.videoUrl || '/covers/convite-lorena.mp4'}
-                  poster={event?.bannerUrl || '/covers/default-cover.png'}
-                  playsInline
-                  controls
-                  className="w-full h-full object-contain"
-                  onPlay={() => {
-                    setIsVideoPlaying(true);
-                    setIsVideoEnded(false);
-                  }}
-                  onPause={() => setIsVideoPlaying(false)}
-                  onEnded={() => {
-                    setIsVideoPlaying(false);
-                    setIsVideoEnded(true);
-                  }}
+            /* VÍDEO CONVITE DA LORENA */
+            <div className="relative w-full h-full flex flex-col items-center justify-center bg-slate-950 overflow-hidden select-none">
+              {videoSource.type === 'youtube' && videoSource.embedUrl ? (
+                /* YouTube Embed Responsive */
+                <div className="w-full h-full relative">
+                  <iframe
+                    src={videoSource.embedUrl}
+                    title="Vídeo Convite da Lorena"
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                  <a
+                    href={videoSource.directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute top-2.5 right-2.5 z-30 px-2 py-1 rounded-lg bg-red-600/90 hover:bg-red-700 text-white text-[10px] font-bold shadow flex items-center gap-1"
+                  >
+                    <ExternalLink size={11} />
+                    <span>YouTube</span>
+                  </a>
+                </div>
+              ) : videoSource.type === 'vimeo' && videoSource.embedUrl ? (
+                /* Vimeo Embed */
+                <iframe
+                  src={videoSource.embedUrl}
+                  title="Vídeo Convite da Lorena"
+                  className="w-full h-full border-0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
                 />
+              ) : (
+                /* Direct Video (MP4 / WebM com Áudio da Lorena e faststart) */
+                <div className="relative w-full h-full flex items-center justify-center group" onClick={handleTogglePlay}>
+                  <video
+                    ref={videoRef}
+                    src={videoSource.directUrl}
+                    poster={event?.bannerUrl || '/covers/default-cover.png'}
+                    preload="auto"
+                    playsInline
+                    webkit-playsinline="true"
+                    x5-video-player-type="h5"
+                    className="w-full h-full object-contain cursor-pointer"
+                    onPlay={() => {
+                      setIsVideoPlaying(true);
+                      setIsVideoEnded(false);
+                      setVideoHasError(false);
+                    }}
+                    onPause={() => setIsVideoPlaying(false)}
+                    onEnded={() => {
+                      setIsVideoPlaying(false);
+                      setIsVideoEnded(true);
+                    }}
+                    onTimeUpdate={() => {
+                      if (videoRef.current) {
+                        setVideoProgress(videoRef.current.currentTime);
+                        setVideoDuration(videoRef.current.duration || 25);
+                      }
+                    }}
+                    onError={(err) => {
+                      console.warn('Erro ao carregar o vídeo direto:', err);
+                      setVideoHasError(true);
+                    }}
+                  />
 
-                {/* Tela Final / Chamada Clara ao Terminar o Vídeo */}
-                {isVideoEnded && (
-                  <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-30 animate-in fade-in duration-300">
-                    <div className="w-14 h-14 rounded-full bg-pink-500/20 text-pink-400 border border-pink-400/40 flex items-center justify-center mb-3 shadow-lg animate-bounce">
-                      <Sparkles size={28} />
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight">
-                      Você está convidado(a)! 🎂✨
-                    </h3>
-                    <p className="text-pink-100 text-sm sm:text-base font-bold mb-6 max-w-sm leading-snug">
-                      Abra o convite para confirmar sua presença e ver como chegar.
-                    </p>
-
-                    <div className="w-full max-w-xs space-y-3">
-                      <button
-                        type="button"
-                        onClick={openFullscreenForm}
-                        className="w-full py-3.5 px-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white rounded-2xl font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all border border-emerald-400/50"
-                      >
-                        <CheckCircle2 size={20} />
-                        <span>Confirmar presença</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
-                            `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
-                          )}`;
-                          window.open(mapsUrl, '_blank', 'noopener,noreferrer');
-                        }}
-                        className="w-full py-3.5 px-5 bg-white/95 hover:bg-white active:scale-95 text-teal-900 rounded-2xl font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all border border-teal-200"
-                      >
-                        <MapPin size={20} className="text-teal-600" />
-                        <span>Como chegar</span>
-                      </button>
-
-                      <div className="flex items-center justify-center gap-4 pt-2">
+                  {/* Play Overlay quando pausado ou antes do início */}
+                  {!isVideoPlaying && !isVideoEnded && !videoHasError && (
+                    <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center cursor-pointer transition-all z-20">
+                      <div className="relative mb-3">
+                        <span className="absolute -inset-2.5 rounded-full bg-pink-500/40 animate-ping" />
                         <button
                           type="button"
-                          onClick={() => {
-                            if (videoRef.current) {
-                              videoRef.current.currentTime = 0;
-                              videoRef.current.play();
-                              setIsVideoEnded(false);
-                            }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTogglePlay();
                           }}
-                          className="text-xs text-pink-200 hover:text-white flex items-center gap-1.5 underline cursor-pointer"
+                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-pink-600 via-rose-500 to-pink-400 text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-white/70 cursor-pointer"
                         >
-                          <RotateCcw size={13} />
-                          <span>Assistir novamente</span>
+                          <Play size={32} className="ml-1 fill-white" />
                         </button>
+                      </div>
+                      <span className="inline-block px-3.5 py-1.5 rounded-full bg-slate-900/90 text-white text-xs font-black shadow-lg border border-pink-400/30">
+                        Toque para Assistir ao Convite
+                      </span>
+                    </div>
+                  )}
 
+                  {/* Barra inferior de reprodução durante o vídeo */}
+                  {isVideoPlaying && (
+                    <div
+                      className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent p-3 pt-6 flex flex-col gap-1.5 z-30 pointer-events-auto opacity-0 group-hover:opacity-100 sm:opacity-90 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden cursor-pointer">
+                        <div
+                          className="bg-pink-500 h-full rounded-full transition-all"
+                          style={{
+                            width: `${videoDuration > 0 ? (videoProgress / videoDuration) * 100 : 0}%`
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-white/90 font-mono">
+                        <button
+                          type="button"
+                          onClick={handleTogglePlay}
+                          className="flex items-center gap-1 text-white hover:text-pink-300 font-bold"
+                        >
+                          <Pause size={12} className="fill-white" />
+                          <span>Pausar</span>
+                        </button>
+                        <span>
+                          {Math.floor(videoProgress)}s / {Math.floor(videoDuration || 25)}s
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback caso ocorra erro no player do navegador */}
+                  {videoHasError && (
+                    <div className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-30 animate-in fade-in">
+                      <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
+                        <AlertCircle size={26} />
+                      </div>
+                      <h4 className="text-white font-bold text-sm mb-1">
+                        Não foi possível iniciar no player integrado
+                      </h4>
+                      <p className="text-slate-300 text-xs mb-4 max-w-xs leading-relaxed">
+                        Seu navegador ou ambiente requer abertura direta. Toque no link abaixo para assistir:
+                      </p>
+                      <div className="space-y-2 w-full max-w-xs">
+                        <a
+                          href={externalVideoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition"
+                        >
+                          <ExternalLink size={15} />
+                          <span>Abrir link do vídeo no navegador</span>
+                        </a>
                         <button
                           type="button"
                           onClick={() => setActiveView('cover')}
-                          className="text-xs text-pink-200 hover:text-white flex items-center gap-1.5 underline cursor-pointer"
+                          className="w-full py-2.5 px-4 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl transition"
                         >
-                          <span>Ver capa digital</span>
+                          Ver Capa Digital com Botões
                         </button>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Chamada persistente abaixo do vídeo */}
-              <div className="w-full bg-slate-900/90 border-t border-slate-800 p-3 sm:p-4 text-center z-20">
-                <p className="text-pink-200 font-bold text-xs sm:text-sm mb-2.5">
-                  Abra o convite para confirmar sua presença e ver como chegar:
-                </p>
-                <div className="flex items-center justify-center gap-2 max-w-sm mx-auto">
-                  <button
-                    type="button"
-                    onClick={openFullscreenForm}
-                    className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs sm:text-sm font-black shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-95"
-                  >
-                    <CheckCircle2 size={16} />
-                    <span>Confirmar presença</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
-                        `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
-                      )}`;
-                      window.open(mapsUrl, '_blank', 'noopener,noreferrer');
-                    }}
-                    className="flex-1 py-2.5 px-3 bg-white/95 hover:bg-white text-teal-900 rounded-xl text-xs sm:text-sm font-black border border-teal-200 shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-95"
-                  >
-                    <MapPin size={16} className="text-teal-600" />
-                    <span>Como chegar</span>
-                  </button>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Tela Final / Chamada Clara ao Terminar o Vídeo */}
+              {isVideoEnded && (
+                <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-3 sm:p-4 text-center z-30 animate-in fade-in duration-300">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-500/20 text-pink-400 border border-pink-400/40 flex items-center justify-center mb-1.5 shadow-md animate-bounce">
+                    <Sparkles size={18} />
+                  </div>
+                  <h3 className="text-sm sm:text-base font-black text-white mb-1 tracking-tight">
+                    Você está convidado(a)! 🎂✨
+                  </h3>
+                  <p className="text-pink-100/90 text-[11px] sm:text-xs font-medium mb-3 max-w-[220px] sm:max-w-[240px] leading-snug">
+                    Abra o convite para confirmar sua presença e ver como chegar.
+                  </p>
+
+                  <div className="w-full max-w-[200px] sm:max-w-[230px] space-y-2">
+                    <button
+                      type="button"
+                      onClick={openFullscreenForm}
+                      className="w-full py-2 px-3 sm:py-2.5 sm:px-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-emerald-400/50"
+                    >
+                      <CheckCircle2 size={15} />
+                      <span>Confirmar presença</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                          `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
+                        )}`;
+                        window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="w-full py-2 px-3 sm:py-2.5 sm:px-3.5 bg-white/95 hover:bg-white active:scale-95 text-teal-900 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-teal-200"
+                    >
+                      <MapPin size={15} className="text-teal-600" />
+                      <span>Como chegar</span>
+                    </button>
+
+                    <div className="flex items-center justify-center gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (videoRef.current) {
+                            videoRef.current.currentTime = 0;
+                            videoRef.current.play();
+                            setIsVideoEnded(false);
+                            setIsVideoPlaying(true);
+                          }
+                        }}
+                        className="text-[11px] text-pink-200 hover:text-white flex items-center gap-1 underline cursor-pointer"
+                      >
+                        <RotateCcw size={11} />
+                        <span>Assistir de novo</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveView('cover')}
+                        className="text-[11px] text-pink-200 hover:text-white flex items-center gap-1 underline cursor-pointer"
+                      >
+                        <span>Capa digital</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             /* CAPA DIGITAL INTERATIVA OFICIAL COM HIPERLINKS */
             event?.bannerUrl ? (
-              <div
-                className="w-full h-full min-h-[100dvh] sm:min-h-0 overflow-hidden flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(145deg, #fff5f8 0%, #ffffff 50%, #f0f9ff 100%)'
-                }}
-              >
-                <InteractiveCoverViewer
-                  imageUrl={event.bannerUrl}
-                  altText={event.title}
-                  hotspots={effectiveHotspots}
-                  showHotspotBorders={false}
-                  interactive={true}
-                  onActionTrigger={handleCoverActionTrigger}
-                  className="w-full h-full min-h-[100dvh] sm:min-h-0"
-                />
-              </div>
+              <InteractiveCoverViewer
+                imageUrl={event.bannerUrl}
+                altText={event.title}
+                hotspots={effectiveHotspots}
+                showHotspotBorders={false}
+                interactive={true}
+                onActionTrigger={handleCoverActionTrigger}
+                className="w-full h-full"
+              />
             ) : (
-              <div
-                className="p-6 sm:p-8 text-center border-b border-pink-100/90"
-                style={{
-                  background: 'linear-gradient(145deg, #fff0f5 0%, #ffffff 50%, #f0f9ff 100%)'
-                }}
-              >
+              <div className="p-6 text-center">
                 <span className="inline-block px-3 py-1 rounded-full bg-pink-100 text-pink-700 font-bold text-xs uppercase tracking-wider mb-3 border border-pink-200">
                   Convite Oficial • Aniversário da Lorena
                 </span>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-2 tracking-tight">
                   {event?.title}
                 </h1>
                 {event?.description && (
@@ -952,34 +1132,36 @@ export const PublicInvitation: React.FC<Props> = ({
           )}
         </div>
 
-        {/* Floating Quick Action Bar on Mobile for instant 1-tap confirmation */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 p-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-slate-950/95 via-slate-900/80 to-transparent flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={openFullscreenForm}
-            className="flex-1 max-w-[210px] py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-          >
-            <CheckCircle2 size={16} className="text-emerald-200" />
-            <span>Confirmar Presença</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
-                `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
-              )}`;
-              window.open(mapsUrl, '_blank', 'noopener,noreferrer');
-            }}
-            className="flex-1 max-w-[180px] py-2.5 px-3 bg-white/95 hover:bg-white active:bg-slate-100 text-teal-900 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 cursor-pointer border border-teal-200 active:scale-95 transition-all"
-          >
-            <MapPin size={16} className="text-teal-600" />
-            <span>Como Chegar</span>
-          </button>
+        {/* Botões de Ação Direta abaixo do card */}
+        <div className="flex flex-col items-center gap-2 pt-2 z-20 mx-auto w-full max-w-[360px] px-1">
+          <div className="grid grid-cols-2 gap-2 w-full">
+            <button
+              type="button"
+              onClick={openFullscreenForm}
+              className="min-h-11 py-2 px-2 sm:px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs sm:text-[13px] font-bold shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-[0.98] border border-emerald-600 text-center leading-tight"
+            >
+              <CheckCircle2 size={16} className="shrink-0 text-white" />
+              <span>Confirmar presença</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                  `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
+                )}`;
+                window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+              }}
+              className="min-h-11 py-2 px-2 sm:px-3 bg-white hover:bg-slate-50 text-teal-950 rounded-xl text-xs sm:text-[13px] font-bold border border-teal-200/90 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-[0.98] text-center leading-tight"
+            >
+              <MapPin size={16} className="shrink-0 text-teal-600" />
+              <span>Como chegar</span>
+            </button>
+          </div>
         </div>
 
-        {/* Rodapé delicado no Desktop */}
-        <div className="hidden sm:block text-center text-[11px] text-pink-700 font-semibold py-2">
-          Aniversário da Lorena • 10/01/2027 a partir das 16h • Esperamos por você! 🎉
+        {/* Rodapé delicado */}
+        <div className="text-center text-[10px] sm:text-[11px] text-pink-700/80 font-semibold pt-1">
+          Aniversário da Lorena • 10/01/2027 a partir das 16h
         </div>
       </div>
 

@@ -33,6 +33,33 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 
 // Serve uploaded static assets directly with permanent URL access
 app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Dedicated covers static handler with explicit media streaming headers
+app.get('/covers/:file', (req, res, next) => {
+  const filename = path.basename(req.params.file);
+  const possiblePaths = [
+    path.join(process.cwd(), 'public', 'covers', filename),
+    path.join(process.cwd(), 'dist', 'covers', filename),
+    path.join('/app/applet/public/covers', filename)
+  ];
+
+  const filePath = possiblePaths.find((p) => fs.existsSync(p));
+  if (!filePath) {
+    return next();
+  }
+
+  if (filename.endsWith('.mp4')) {
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Accept-Ranges', 'bytes');
+  } else if (filename.endsWith('.png')) {
+    res.setHeader('Content-Type', 'image/png');
+  } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+    res.setHeader('Content-Type', 'image/jpeg');
+  }
+
+  return res.sendFile(filePath);
+});
+
 app.use('/covers', express.static(path.join(process.cwd(), 'public', 'covers')));
 
 // Bulletproof fallback: If an uploaded file is not found (e.g. ephemeral disk after restart on Render),
@@ -105,10 +132,10 @@ function getInitialData(): DatabaseSchema {
         actionType: 'confirm_rsvp',
         targetUrl: '#formulario',
         openInNewTab: false,
-        x: 9.2,
-        y: 70.5,
-        width: 39.4,
-        height: 7.1
+        x: 10.5,
+        y: 85.5,
+        width: 37.0,
+        height: 5.8
       },
       {
         id: 'hs-2',
@@ -116,10 +143,10 @@ function getInitialData(): DatabaseSchema {
         actionType: 'google_maps',
         targetUrl: 'https://maps.google.com/?q=Sal%C3%A3o%20Happy%20Day%20Kids%2C%20Rua%20Cachoeira%2C%20n%C2%BA%2034%2C%20Jardim%20Rosa%20de%20Fran%C3%A7a%2C%20Guarulhos',
         openInNewTab: true,
-        x: 51.4,
-        y: 70.5,
-        width: 39.4,
-        height: 7.1
+        x: 52.5,
+        y: 85.5,
+        width: 37.0,
+        height: 5.8
       }
     ],
     whatsappTemplates: { ...defaultTemplates },
