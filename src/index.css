@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #f6fafb;
+    background-image:
+      /* Top-left subtle luminous teal glow (Ativa primary teal) */
+      radial-gradient(1200px 700px at 5% 0%, rgba(0, 122, 120, 0.07) 0%, transparent 60%),
+      /* Top-right executive platinum / slate ambient mist */
+      radial-gradient(1000px 650px at 95% 5%, rgba(15, 118, 110, 0.05) 0%, transparent 55%),
+      /* Center soft white illumination */
+      radial-gradient(1100px 800px at 50% 40%, rgba(255, 255, 255, 0.95) 0%, rgba(246, 250, 251, 0.6) 60%, transparent 80%),
+      /* Bottom-left soft teal accent */
+      radial-gradient(1200px 800px at 10% 95%, rgba(0, 122, 120, 0.05) 0%, transparent 60%),
+      /* Broad smooth base linear gradient */
+      linear-gradient(180deg, #fbfdfd 0%, #f4f8f9 50%, #edf4f6 100%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    @apply text-slate-800 antialiased selection:bg-teal-700 selection:text-white;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+.bg-ativa-gradient {
+  background-color: #f6fafb;
+  background-image:
+    radial-gradient(1200px 700px at 5% 0%, rgba(0, 122, 120, 0.07) 0%, transparent 60%),
+    radial-gradient(1000px 650px at 95% 5%, rgba(15, 118, 110, 0.05) 0%, transparent 55%),
+    radial-gradient(1100px 800px at 50% 40%, rgba(255, 255, 255, 0.95) 0%, rgba(246, 250, 251, 0.6) 60%, transparent 80%),
+    radial-gradient(1200px 800px at 10% 95%, rgba(0, 122, 120, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #fbfdfd 0%, #f4f8f9 50%, #edf4f6 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/* Custom refined scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 122, 120, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 122, 120, 0.55);
+}
+
+/* Ocultar selos ou drawers injetados pelo Netlify */
+#netlify-badge,
+iframe#netlify-badge,
+iframe[title*="Netlify" i],
+iframe[src*="netlify" i],
+div[class*="netlify-feedback"],
+div[id*="netlify"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+

@@ -1,0 +1,161 @@
+{
+  "adminPin": "admin123",
+  "events": [
+    {
+      "id": "evt-2026-seguranca",
+      "title": "Aniversário da Lorena",
+      "date": "2027-01-10",
+      "time": "A partir das 16h",
+      "location": "Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos",
+      "address": "Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos",
+      "bannerUrl": "/covers/default-cover.png",
+      "logoUrl": "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=300&q=80",
+      "presentationText": "Bem-vindo ao Aniversário da Lorena! Confirme sua presença abaixo.",
+      "shareTitle": "Aniversário da Lorena | Confirmação de Presença",
+      "shareDescription": "Convite Especial - Aniversário da Lorena. Confirme sua presença.",
+      "requireJanitor": false,
+      "maxParticipants": 150,
+      "confirmationDeadline": "2027-01-08",
+      "waitingListEnabled": true,
+      "status": "active",
+      "whatsappTemplates": {
+        "confirmed": "Olá, {Nome}. Tudo bem?\n\nRecebemos sua confirmação para o {Evento}.\nSerá um prazer receber você e o condomínio {Condominio} conosco!\n\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n📌 Endereço: {Endereco}\n\nAté breve!",
+        "viewedNotConfirmed": "Olá, {Nome}. Tudo bem?\n\nPassando cordialmente para confirmar se você conseguiu visualizar nosso convite especial para o {Evento}.\n\nA presença do {Condominio} será muito bem-vinda!\n\nPara confirmar ou responder, basta acessar seu convite:\n{Link}\n\nQualquer dúvida estamos à disposição.",
+        "notViewed": "Olá, {Nome}. Tudo bem?\n\nGostaríamos de convidá-lo com exclusividade para o {Evento}.\n\nPreparamos um convite especial para você e o condomínio {Condominio}:\n{Link}\n\nSerá um grande prazer contar com sua presença!",
+        "reminder": "Olá, {Nome}! Lembramos que o {Evento} acontecerá em breve!\n\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n\nSeu convite com QR Code para entrada:\n{Link}\n\nEsperamos você!",
+        "thankYou": "Olá, {Nome}! Agradecemos imensamente a sua presença no {Evento}. Foi uma honra contar com você e com o condomínio {Condominio}!\n\nEm breve enviaremos os materiais e certificados."
+      },
+      "createdAt": "2026-08-28T02:43:42.858Z",
+      "updatedAt": "2026-09-03T12:00:00.000Z",
+      "coverHotspots": [
+        {
+          "id": "hs-1",
+          "name": "Confirmar Presença",
+          "actionType": "confirm_rsvp",
+          "targetUrl": "#formulario",
+          "openInNewTab": false,
+          "x": 7.2,
+          "y": 61.7,
+          "width": 42,
+          "height": 7.5
+        },
+        {
+          "id": "hs-2",
+          "name": "Como Chegar",
+          "actionType": "google_maps",
+          "targetUrl": "https://maps.google.com/?q=Rua+Cachoeira%2C+n%C2%BA+34%2C+Jardim+Rosa+de+Fran%C3%A7a%2C+Guarulhos",
+          "openInNewTab": true,
+          "x": 50.6,
+          "y": 61.8,
+          "width": 44.1,
+          "height": 7.8
+        }
+      ]
+    }
+  ],
+  "invitations": [
+    {
+      "id": "inv-1788327021288-0k12",
+      "code": "TQLBX2",
+      "eventId": "evt-2026-seguranca",
+      "condoName": "sol",
+      "managerName": "Adriano",
+      "janitorName": "Antonio",
+      "whatsapp": "(11) 93473-9629",
+      "attendeeRole": "both",
+      "participantCount": 2,
+      "status": "confirmed",
+      "viewCount": 1,
+      "firstViewedAt": "2026-09-02T05:30:21.288Z",
+      "lastViewedAt": "2026-09-02T05:30:21.288Z",
+      "confirmedAt": "2026-09-02T05:30:21.288Z",
+      "declinedAt": null,
+      "checkedInAt": null,
+      "internalNotes": "Inscrição via Link Geral",
+      "history": [
+        {
+          "id": "h-1788327021288-1",
+          "timestamp": "2026-09-02T05:30:21.288Z",
+          "type": "created",
+          "description": "Convite gerado automaticamente via Formulário Geral"
+        },
+        {
+          "id": "h-1788327021288-2",
+          "timestamp": "2026-09-02T05:30:21.288Z",
+          "type": "confirmed",
+          "description": "Presença confirmada pelo formulário aberto: Síndico e Zelador (2 pessoas)"
+        },
+        {
+          "id": "h-1788327058775",
+          "timestamp": "2026-09-02T05:30:58.775Z",
+          "type": "whatsapp_opened",
+          "description": "Mensagem WhatsApp disparada/aberta (confirmed)"
+        }
+      ],
+      "createdAt": "2026-09-02T05:30:21.288Z",
+      "updatedAt": "2026-09-02T05:30:58.775Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1788327021331",
+      "eventId": "evt-2026-seguranca",
+      "title": "Nova Inscrição (Formulário Geral)",
+      "message": "sol (Adriano) confirmou presença pelo link geral (2 pessoas).",
+      "timestamp": "2026-09-02T05:30:21.288Z",
+      "type": "confirmed",
+      "invitationCode": "TQLBX2",
+      "read": false
+    },
+    {
+      "id": "notif-1788324299581",
+      "eventId": "evt-2026-seguranca",
+      "title": "Inscrição confirmada (Formulário Geral)",
+      "message": "Vista (Adriano) confirmou presença via link público geral (2 pessoas).",
+      "timestamp": "2026-09-02T04:44:59.548Z",
+      "type": "confirmed",
+      "invitationCode": "WTR3M8",
+      "read": false
+    },
+    {
+      "id": "notif-1788321788115",
+      "eventId": "evt-2026-seguranca",
+      "title": "Nova Inscrição (Formulário Geral)",
+      "message": "sol (Adriano) confirmou presença pelo link geral (2 pessoas).",
+      "timestamp": "2026-09-02T04:03:08.075Z",
+      "type": "confirmed",
+      "invitationCode": "WTR3M8",
+      "read": false
+    },
+    {
+      "id": "notif-1",
+      "eventId": "evt-2026-seguranca",
+      "title": "Nova confirmação recebida",
+      "message": "Condomínio Grand Park Tower confirmou presença (2 participantes).",
+      "timestamp": "2026-08-31T02:43:42.858Z",
+      "type": "confirmed",
+      "invitationCode": "PARK01",
+      "read": true
+    },
+    {
+      "id": "notif-2",
+      "eventId": "evt-2026-seguranca",
+      "title": "Nova confirmação recebida",
+      "message": "Residencial Solar das Palmeiras confirmou presença (1 participante).",
+      "timestamp": "2026-09-01T02:43:42.858Z",
+      "type": "confirmed",
+      "invitationCode": "SOL928",
+      "read": false
+    },
+    {
+      "id": "notif-3",
+      "eventId": "evt-2026-seguranca",
+      "title": "Convite visualizado",
+      "message": "Edifício Bela Vista Plaza visualizou o convite.",
+      "timestamp": "2026-09-01T08:43:42.858Z",
+      "type": "viewed",
+      "invitationCode": "BELA44",
+      "read": false
+    }
+  ]
+}

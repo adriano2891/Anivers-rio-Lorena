@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 1188" width="840" height="1188">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;display=swap');
+      text {
+        font-family: 'Montserrat', 'Liberation Sans', 'Nimbus Sans', Arial, sans-serif;
+      }
+    </style>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F2F9F8" />
+      <stop offset="20%" stop-color="#FFFFFF" />
+      <stop offset="80%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#EFF8F7" />
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#003833" flood-opacity="0.05" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="840" height="1188" fill="url(#bgGrad)" />
+
+  <!-- Top-left geometric ribbon accents -->
+  <polygon points="0,0 210,0 0,210" fill="#003D38" />
+  <polygon points="0,0 145,0 0,145" fill="#005B54" />
+  <polygon points="0,0 70,0 0,70" fill="#008477" />
+
+  <!-- Top-right geometric ribbon accents -->
+  <polygon points="630,0 840,0 840,210" fill="#003D38" />
+  <polygon points="695,0 840,0 840,145" fill="#005B54" />
+  <polygon points="770,0 840,0 840,70" fill="#008477" />
+
+  <!-- LOGOS HEADER -->
+  <g id="header-logos" transform="translate(130, 48)">
+    <!-- Grupo Ativa Logo (Left) -->
+    <g transform="translate(0, 0)">
+      <!-- Ativa Emblem -->
+      <g transform="translate(20, 10)">
+        <ellipse cx="60" cy="32" rx="52" ry="26" fill="#002D3A" transform="rotate(-15 60 32)" />
+        <ellipse cx="60" cy="32" rx="40" ry="17" fill="#FFFFFF" transform="rotate(-15 60 32)" />
+        <circle cx="60" cy="32" r="13" fill="#00A896" />
+        <path d="M55 40 L60 23 L65 40 Z M57 35 L63 35" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" fill="none" />
+      </g>
+      <!-- Ativa Text -->
+      <text x="165" y="34" font-size="20" font-weight="700" fill="#002D3A" letter-spacing="2">GRUPO</text>
+      <text x="165" y="64" font-size="30" font-weight="900" fill="#007F73" letter-spacing="1">ATIVA</text>
+    </g>
+
+    <!-- Intelbras Logo (Right) -->
+    <g transform="translate(365, 12)">
+      <text x="30" y="42" font-size="42" font-weight="800" fill="#009540" letter-spacing="-0.5">intelbras</text>
+      <text x="105" y="62" font-size="13" font-weight="600" fill="#009540" letter-spacing="0.5">sempre próxima</text>
+    </g>
+  </g>
+
+  <!-- CONVITE ESPECIAL HEADER -->
+  <g transform="translate(0, 170)">
+    <line x1="85" y1="0" x2="295" y2="0" stroke="#004D40" stroke-width="1.8" />
+    <text x="420" y="5" font-size="18" font-weight="700" fill="#004D40" text-anchor="middle" letter-spacing="5">CONVITE ESPECIAL</text>
+    <line x1="545" y1="0" x2="755" y2="0" stroke="#004D40" stroke-width="1.8" />
+  </g>
+
+  <!-- SÍNDICOS & ZELADORES BADGE (with Liderança • Gestão • Segurança • Inovação) -->
+  <g transform="translate(100, 202)">
+    <rect x="0" y="0" width="640" height="74" rx="37" fill="#FFFFFF" stroke="#004D40" stroke-width="2" />
+    
+    <!-- Icons of Síndico & Zelador inside badge -->
+    <g transform="translate(35, 11)">
+      <!-- Sindico figure -->
+      <circle cx="20" cy="15" r="9" fill="none" stroke="#007F73" stroke-width="2.3" />
+      <path d="M8 42 C8 30 32 30 32 42" fill="none" stroke="#007F73" stroke-width="2.3" />
+      <path d="M20 29 L22 39 L20 42 L18 39 Z" fill="#007F73" />
+      <!-- Zelador figure -->
+      <circle cx="52" cy="16" r="8" fill="none" stroke="#007F73" stroke-width="2.3" />
+      <path d="M40 13 Q52 7 64 13 L67 16 L37 16 Z" fill="#007F73" />
+      <path d="M41 42 C41 33 63 33 63 42" fill="none" stroke="#007F73" stroke-width="2.3" />
+      <line x1="52" y1="31" x2="52" y2="42" stroke="#007F73" stroke-width="1.8" />
+    </g>
+
+    <line x1="125" y1="12" x2="125" y2="62" stroke="#D1EAE7" stroke-width="1.5" />
+
+    <text x="375" y="36" font-size="24" font-weight="900" fill="#0A2540" letter-spacing="2" text-anchor="middle">SÍNDICOS &amp; ZELADORES</text>
+    <text x="375" y="56" font-size="11.5" font-weight="700" fill="#00695C" letter-spacing="2.5" text-anchor="middle">LIDERANÇA • GESTÃO • SEGURANÇA • INOVAÇÃO</text>
+  </g>
+
+  <!-- MAIN HEADLINE -->
+  <g transform="translate(420, 345)">
+    <text x="0" y="0" font-size="58" font-weight="900" fill="#0A2540" text-anchor="middle" letter-spacing="1">TREINAMENTO</text>
+    <text x="0" y="80" font-size="74" font-weight="900" fill="#005F56" text-anchor="middle" letter-spacing="1.5">INTELBRAS</text>
+
+    <!-- 3 Connected People Icon -->
+    <g transform="translate(-40, 105)">
+      <circle cx="12" cy="12" r="6.5" fill="none" stroke="#00897B" stroke-width="2.3" />
+      <circle cx="40" cy="10" r="7.5" fill="none" stroke="#00897B" stroke-width="2.3" />
+      <circle cx="68" cy="12" r="6.5" fill="none" stroke="#00897B" stroke-width="2.3" />
+      <path d="M1 27 C1 21 23 21 23 27" fill="none" stroke="#00897B" stroke-width="2" />
+      <path d="M26 27 C26 19 54 19 54 27" fill="none" stroke="#00897B" stroke-width="2.3" />
+      <path d="M57 27 C57 21 79 21 79 27" fill="none" stroke="#00897B" stroke-width="2" />
+      <line x1="18" y1="12" x2="32" y2="10" stroke="#00897B" stroke-width="1.6" />
+      <line x1="48" y1="10" x2="62" y2="12" stroke="#00897B" stroke-width="1.6" />
+    </g>
+
+    <line x1="-310" y1="123" x2="-60" y2="123" stroke="#004D40" stroke-width="1.2" />
+    <line x1="60" y1="123" x2="310" y2="123" stroke="#004D40" stroke-width="1.2" />
+  </g>
+
+  <!-- SUBTITLE -->
+  <g transform="translate(420, 502)" text-anchor="middle">
+    <text x="0" y="0" font-size="18.5" font-weight="500" fill="#334E68">Um momento de <tspan font-weight="700" fill="#005F56">conhecimento, inovação e tecnologia</tspan></text>
+    <text x="0" y="26" font-size="18.5" font-weight="500" fill="#334E68">para impulsionar ainda mais os nossos resultados.</text>
+  </g>
+
+  <!-- EVENT DETAILS 3-COLUMN CARD (Data 21/09 Domingo, Horário 14h às 16h, Coffee Break) -->
+  <g transform="translate(60, 552)">
+    <!-- White Card with subtle border -->
+    <rect x="0" y="0" width="720" height="152" rx="20" fill="#FFFFFF" stroke="#D1EAE7" stroke-width="1.5" filter="url(#cardShadow)" />
+
+    <!-- Column Dividers -->
+    <line x1="245" y1="18" x2="245" y2="134" stroke="#E2E8F0" stroke-width="1.5" />
+    <line x1="475" y1="18" x2="475" y2="134" stroke="#E2E8F0" stroke-width="1.5" />
+
+    <!-- COLUMN 1: DATA (21/09 DOMINGO) -->
+    <g transform="translate(122, 28)" text-anchor="middle">
+      <!-- Calendar Icon -->
+      <g transform="translate(-18, 0)">
+        <rect x="0" y="6" width="36" height="30" rx="6" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <line x1="9" y1="0" x2="9" y2="9" stroke="#007F73" stroke-width="2.8" stroke-linecap="round" />
+        <line x1="27" y1="0" x2="27" y2="9" stroke="#007F73" stroke-width="2.8" stroke-linecap="round" />
+        <line x1="0" y1="16" x2="36" y2="16" stroke="#007F73" stroke-width="1.8" />
+        <circle cx="11" cy="24" r="2.2" fill="#007F73" />
+        <circle cx="18" cy="24" r="2.2" fill="#007F73" />
+        <circle cx="25" cy="24" r="2.2" fill="#007F73" />
+      </g>
+      <text x="0" y="55" font-size="13" font-weight="700" fill="#627D98" letter-spacing="1.5">DATA</text>
+      <text x="0" y="90" font-size="34" font-weight="900" fill="#003D38">21/09</text>
+      <text x="0" y="112" font-size="14" font-weight="800" fill="#627D98" letter-spacing="1">DOMINGO</text>
+    </g>
+
+    <!-- COLUMN 2: HORÁRIO (14h às 16h) -->
+    <g transform="translate(360, 28)" text-anchor="middle">
+      <!-- Clock Icon -->
+      <circle cx="0" cy="20" r="20" fill="none" stroke="#007F73" stroke-width="2.5" />
+      <polyline points="0,8 0,20 10,20" fill="none" stroke="#007F73" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="0" y="55" font-size="13" font-weight="700" fill="#627D98" letter-spacing="1.5">HORÁRIO</text>
+      <text x="0" y="90" font-size="28" font-weight="900" fill="#003D38">14h às 16h</text>
+    </g>
+
+    <!-- COLUMN 3: COFFEE BREAK -->
+    <g transform="translate(598, 28)" text-anchor="middle">
+      <!-- Coffee Cup Icon -->
+      <g transform="translate(0, 6)">
+        <path d="M-15,10 L-11,28 C-11,32 11,32 11,28 L15,10 Z" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <path d="M13,13 C20,13 20,23 12,23" fill="none" stroke="#007F73" stroke-width="2" />
+        <path d="M-18,34 L18,34" stroke="#007F73" stroke-width="2.5" stroke-linecap="round" />
+        <!-- Steam -->
+        <path d="M-6,4 Q-9,0 -6,-4" fill="none" stroke="#007F73" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M0,6 Q-2,1 0,-3" fill="none" stroke="#007F73" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M6,4 Q4,0 6,-4" fill="none" stroke="#007F73" stroke-width="1.8" stroke-linecap="round" />
+      </g>
+      <text x="0" y="55" font-size="11.5" font-weight="700" fill="#627D98" letter-spacing="1">APÓS O TREINAMENTO</text>
+      <text x="0" y="86" font-size="20" font-weight="900" fill="#003D38">COFFEE BREAK</text>
+    </g>
+  </g>
+
+  <!-- TWO BIG CALL-TO-ACTION BUTTONS (HOTSPOT AREAS) -->
+  <!-- Left Button: CLIQUE AQUI PARA CONFIRMAR PRESENÇA -->
+  <g id="btn-confirm-rsvp" transform="translate(60, 720)">
+    <rect x="0" y="0" width="345" height="84" rx="16" fill="#00635B" />
+
+    <!-- Checkmark Badge -->
+    <g transform="translate(42, 42)">
+      <circle cx="0" cy="0" r="19" fill="#FFFFFF" />
+      <path d="M-6,-1 L-1,4 L8,-5" fill="none" stroke="#00635B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Text -->
+    <text x="76" y="34" font-size="11.5" font-weight="700" fill="#E0F2F1" letter-spacing="0.8">CLIQUE AQUI PARA</text>
+    <text x="76" y="56" font-size="16.5" font-weight="900" fill="#FFFFFF" letter-spacing="0.5">CONFIRMAR PRESENÇA</text>
+
+    <!-- Clicking Hand Pointer Icon on Right -->
+    <g transform="translate(300, 42)">
+      <!-- Hand -->
+      <path d="M-6,-13 L-6,1 L-11,4 L-9,14 L5,14 C10,14 11,9 11,4 L11,-3 C11,-5 9,-5 9,-3 L9,0 L6,0 L6,-8 C6,-10 4,-10 4,-8 L4,0 L1,0 L1,-10 C1,-12 -1,-12 -1,-10 L-1,0 L-3,0 L-3,-13 C-3,-15 -6,-15 -6,-13 Z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" />
+      <!-- Click Rays / Sparkles -->
+      <path d="M-12,-16 L-16,-19 M-6,-21 L-6,-25 M0,-18 L3,-21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Right Button: CLIQUE AQUI PARA SABER COMO CHEGAR -->
+  <g id="btn-how-to-arrive" transform="translate(435, 720)">
+    <rect x="0" y="0" width="345" height="84" rx="16" fill="#FFFFFF" stroke="#00635B" stroke-width="2.5" />
+
+    <!-- Map Pin Badge -->
+    <g transform="translate(42, 42)">
+      <circle cx="0" cy="0" r="19" fill="#00635B" />
+      <path d="M-5.5,-3 C-5.5,-8 5.5,-8 5.5,-3 C5.5,2 0,9 0,9 C0,9 -5.5,2 -5.5,-3 Z" fill="#FFFFFF" />
+      <circle cx="0" cy="-3" r="2.8" fill="#00635B" />
+    </g>
+
+    <!-- Text -->
+    <text x="76" y="34" font-size="11.5" font-weight="700" fill="#627D98" letter-spacing="0.8">CLIQUE AQUI PARA</text>
+    <text x="76" y="56" font-size="16.5" font-weight="900" fill="#00635B" letter-spacing="0.5">SABER COMO CHEGAR</text>
+
+    <!-- Clicking Hand Pointer Icon on Right -->
+    <g transform="translate(300, 42)">
+      <!-- Hand -->
+      <path d="M-6,-13 L-6,1 L-11,4 L-9,14 L5,14 C10,14 11,9 11,4 L11,-3 C11,-5 9,-5 9,-3 L9,0 L6,0 L6,-8 C6,-10 4,-10 4,-8 L4,0 L1,0 L1,-10 C1,-12 -1,-12 -1,-10 L-1,0 L-3,0 L-3,-13 C-3,-15 -6,-15 -6,-13 Z" fill="none" stroke="#00635B" stroke-width="2" stroke-linejoin="round" />
+      <!-- Click Rays / Sparkles -->
+      <path d="M-12,-16 L-16,-19 M-6,-21 L-6,-25 M0,-18 L3,-21" stroke="#00635B" stroke-width="2" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- VALUE PROPOSITION & TARGET SECTION -->
+  <g transform="translate(60, 825)">
+    <!-- Left Box: JUNTOS FAZEMOS A DIFERENÇA -->
+    <g transform="translate(0, 0)">
+      <!-- Card background -->
+      <rect x="0" y="0" width="335" height="195" rx="18" fill="#F0F8F7" stroke="#D1EAE7" stroke-width="1.5" />
+
+      <!-- Outline Illustration of Síndico & Zelador -->
+      <g transform="translate(55, 18)">
+        <!-- Sindico -->
+        <circle cx="32" cy="20" r="12" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <path d="M14 58 C14 41 50 41 50 58" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <path d="M32 42 L34 52 L32 55 L30 52 Z" fill="#007F73" />
+        <!-- Zelador with cap -->
+        <circle cx="80" cy="22" r="11" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <path d="M66 17 Q80 11 94 17 L97 20 L63 20 Z" fill="#007F73" />
+        <path d="M62 58 C62 45 98 45 98 58" fill="none" stroke="#007F73" stroke-width="2.5" />
+        <line x1="80" y1="43" x2="80" y2="58" stroke="#007F73" stroke-width="2" />
+      </g>
+
+      <text x="167" y="100" font-size="16" font-weight="900" fill="#003D38" text-anchor="middle">JUNTOS, FAZEMOS</text>
+      <text x="167" y="120" font-size="16" font-weight="900" fill="#003D38" text-anchor="middle">A DIFERENÇA!</text>
+
+      <text x="167" y="148" font-size="12" font-weight="500" fill="#334E68" text-anchor="middle">
+        <tspan x="167" dy="0">A participação de síndicos</tspan>
+        <tspan x="167" dy="16">e zeladores fortalece o condomínio</tspan>
+        <tspan x="167" dy="16">e transforma a rotina de todos.</tspan>
+      </text>
+    </g>
+
+    <!-- Vertical Divider -->
+    <line x1="360" y1="15" x2="360" y2="180" stroke="#E2E8F0" stroke-width="1.5" />
+
+    <!-- Right Box: SÍNDICOS e ZELADORES Breakdown -->
+    <g transform="translate(385, 8)">
+      <!-- Item 1: SÍNDICOS -->
+      <g transform="translate(0, 10)">
+        <!-- Star in Circle Icon -->
+        <circle cx="22" cy="22" r="20" fill="#00635B" />
+        <polygon points="22,11 25,18 33,18 27,23 29,31 22,26 15,31 17,23 11,18 19,18" fill="#FFFFFF" />
+
+        <text x="56" y="18" font-size="15.5" font-weight="900" fill="#003D38" letter-spacing="1">SÍNDICOS</text>
+        <text x="56" y="38" font-size="12" font-weight="500" fill="#334E68">
+          <tspan x="56" dy="0">Invista no desenvolvimento da sua equipe</tspan>
+          <tspan x="56" dy="16">e eleve o nível de gestão do seu condomínio.</tspan>
+        </text>
+      </g>
+
+      <!-- Item 2: ZELADORES -->
+      <g transform="translate(0, 96)">
+        <!-- Shield in Circle Icon -->
+        <circle cx="22" cy="22" r="20" fill="#00635B" />
+        <path d="M22,12 L32,15 L32,23 C32,29 27,33 22,35 C17,33 12,29 12,23 L12,15 Z" fill="#FFFFFF" />
+        <path d="M19,23 L21,25 L26,19" fill="none" stroke="#00635B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+        <text x="56" y="18" font-size="15.5" font-weight="900" fill="#003D38" letter-spacing="1">ZELADORES</text>
+        <text x="56" y="38" font-size="12" font-weight="500" fill="#334E68">
+          <tspan x="56" dy="0">Aprenda novas soluções, aprimore suas</tspan>
+          <tspan x="56" dy="16">habilidades e faça ainda mais a diferença</tspan>
+          <tspan x="56" dy="16">no dia a dia.</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- FOOTER -->
+  <g transform="translate(420, 1070)" text-anchor="middle">
+    <line x1="-260" y1="-22" x2="-130" y2="-22" stroke="#004D40" stroke-width="1.5" />
+    <text x="0" y="-17" font-size="14" font-weight="700" fill="#0A2540" letter-spacing="2.5">JUNTOS, CONECTANDO SOLUÇÕES E PESSOAS</text>
+    <line x1="130" y1="-22" x2="260" y2="-22" stroke="#004D40" stroke-width="1.5" />
+
+    <text x="0" y="12" font-size="20" font-weight="900" fill="#007F73" letter-spacing="1.5">PARA UM FUTURO MELHOR.</text>
+  </g>
+
+  <!-- Bottom geometric accents -->
+  <polygon points="0,1188 170,1188 0,1018" fill="#003D38" />
+  <polygon points="0,1188 115,1188 0,1073" fill="#005B54" />
+  <polygon points="0,1188 55,1188 0,1133" fill="#008477" />
+
+  <polygon points="670,1188 840,1188 840,1018" fill="#003D38" />
+  <polygon points="725,1188 840,1188 840,1073" fill="#005B54" />
+  <polygon points="785,1188 840,1188 840,1133" fill="#008477" />
+</svg>

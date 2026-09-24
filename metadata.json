@@ -1,0 +1,10 @@
+{
+  "name": "Comvite Lorena",
+  "description": "Sistema completo de gestão de convites, confirmação de presença (RSVP), lista de convidados e check-in para o Aniversário da Lorena.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
