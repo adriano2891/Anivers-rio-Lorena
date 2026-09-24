@@ -115,7 +115,7 @@ function getInitialData(): DatabaseSchema {
     location: 'Salão Happy Day Kids',
     address: 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos',
     bannerUrl: '/covers/default-cover.png',
-    videoUrl: '/covers/convite-lorena.mp4',
+    videoUrl: 'https://drive.google.com/file/d/1-dC_G2Ir9rOsg__atp_mVhLdew1I6DAL/view?usp=sharing',
     logoUrl: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=300&q=80',
     presentationText: 'Bem-vindo ao Aniversário da Lorena! Assista ao vídeo e confirme sua presença.',
     shareTitle: 'Aniversário da Lorena (9 Anos) | Convite Especial',
