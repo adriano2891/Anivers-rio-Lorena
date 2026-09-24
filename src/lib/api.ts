@@ -517,6 +517,7 @@ export async function registerPublicInvitation(
     adultsCount?: number;
     childrenCount?: number;
     guestsNames?: string;
+    guestsList?: import('../types').GuestPerson[];
     specialNeeds?: string;
   }
 ): Promise<{ success: boolean; invitation: Invitation; event: CondoEvent; isExisting?: boolean }> {
@@ -551,6 +552,7 @@ export async function registerPublicInvitation(
     managerName: resp,
     janitorName: data.guestsNames || data.janitorName,
     guestsNames: data.guestsNames || resp,
+    guestsList: data.guestsList || [],
     adultsCount: adults,
     childrenCount: children,
     participantCount,
@@ -661,6 +663,7 @@ export async function submitRsvp(
     adultsCount?: number;
     childrenCount?: number;
     guestsNames?: string;
+    guestsList?: import('../types').GuestPerson[];
     specialNeeds?: string;
   }
 ): Promise<{ success: boolean; invitation: Invitation; event: CondoEvent }> {
@@ -700,6 +703,7 @@ export async function submitRsvp(
     inv.condoName = data.familyOrGroup;
   }
   if (data.guestsNames) inv.guestsNames = data.guestsNames;
+  if (data.guestsList) inv.guestsList = data.guestsList;
   if (data.specialNeeds !== undefined) inv.specialNeeds = data.specialNeeds;
   if (data.whatsapp) inv.whatsapp = data.whatsapp;
   if (isConfirm) inv.confirmedAt = new Date().toISOString();

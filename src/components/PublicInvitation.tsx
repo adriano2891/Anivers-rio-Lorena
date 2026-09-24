@@ -21,7 +21,13 @@ import {
   QrCode as QrIcon,
   MessageCircle,
   Bookmark,
-  X
+  X,
+  Play,
+  Pause,
+  RotateCcw,
+  Video,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
@@ -30,7 +36,7 @@ import { getInvitationByCode, submitRsvp, getActiveEventPublic, registerPublicIn
 import { formatPhone, formatDateBR, downloadCalendarFile, buildInvitationUrl } from '../lib/utils';
 import { AtivaLogo } from './AtivaLogo';
 import { InteractiveCoverViewer } from './InteractiveCoverViewer';
-import { FullscreenRsvpModal } from './FullscreenRsvpModal';
+import { FullscreenRsvpModal, GuestItem } from './FullscreenRsvpModal';
 import { generateInteractivePdf } from '../lib/interactivePdf';
 import { fireCelebrationConfetti } from '../lib/confetti';
 
@@ -63,6 +69,7 @@ export const PublicInvitation: React.FC<Props> = ({
   const [familyOrGroup, setFamilyOrGroup] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [guestsNames, setGuestsNames] = useState('');
+  const [guestList, setGuestList] = useState<GuestItem[]>([]);
   const [adultsCount, setAdultsCount] = useState<number>(1);
   const [childrenCount, setChildrenCount] = useState<number>(0);
   const [specialNeeds, setSpecialNeeds] = useState('');
@@ -72,6 +79,27 @@ export const PublicInvitation: React.FC<Props> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [toastNotice, setToastNotice] = useState<string | null>(null);
+
+  const handleAddGuest = () => {
+    setGuestList((prev) => [
+      ...prev,
+      {
+        id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: '',
+        age: ''
+      }
+    ]);
+  };
+
+  const handleRemoveGuest = (id: string) => {
+    setGuestList((prev) => prev.filter((g) => g.id !== id));
+  };
+
+  const handleGuestChange = (id: string, field: 'name' | 'age', value: string) => {
+    setGuestList((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, [field]: value } : g))
+    );
+  };
 
   // Helper to detect if URL requested immediate form open (e.g. from PDF link with ?confirmar=1, ?rsvp=1, #formulario)
   const shouldInitialAutoOpen = () => {
@@ -89,6 +117,12 @@ export const PublicInvitation: React.FC<Props> = ({
       hash.includes('rsvp')
     );
   };
+
+  // Active view: 'video' (Vídeo Convite Principal) or 'cover' (Capa Digital Interativa)
+  const [activeView, setActiveView] = useState<'video' | 'cover'>('video');
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
+  const [isVideoEnded, setIsVideoEnded] = useState<boolean>(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fullscreen Form State
   const [isFormFullscreenOpen, setIsFormFullscreenOpen] = useState(shouldInitialAutoOpen);
@@ -323,6 +357,41 @@ export const PublicInvitation: React.FC<Props> = ({
           setFamilyOrGroup(data.invitation.familyOrGroup || data.invitation.condoName || '');
           setWhatsapp(data.invitation.whatsapp || '');
           setGuestsNames(data.invitation.guestsNames || data.invitation.janitorName || '');
+
+          if (data.invitation.guestsList && Array.isArray(data.invitation.guestsList) && data.invitation.guestsList.length > 0) {
+            setGuestList(
+              data.invitation.guestsList.map((g, idx) => ({
+                id: g.id || `guest-${idx}-${Date.now()}`,
+                name: g.name || '',
+                age: g.age || ''
+              }))
+            );
+          } else if (data.invitation.guestsNames || data.invitation.janitorName) {
+            const raw = data.invitation.guestsNames || data.invitation.janitorName || '';
+            const parsed = raw
+              .split(',')
+              .map((item, idx) => {
+                const trimmed = item.trim();
+                const match = trimmed.match(/^(.+?)\s*\((.*?)\)$/);
+                if (match) {
+                  return {
+                    id: `guest-pre-${idx}-${Date.now()}`,
+                    name: match[1].trim(),
+                    age: match[2].trim()
+                  };
+                }
+                return {
+                  id: `guest-pre-${idx}-${Date.now()}`,
+                  name: trimmed,
+                  age: ''
+                };
+              })
+              .filter((g) => g.name.length > 0);
+            if (parsed.length > 0) {
+              setGuestList(parsed);
+            }
+          }
+
           setAdultsCount(
             data.invitation.adultsCount !== undefined
               ? data.invitation.adultsCount
@@ -372,34 +441,63 @@ export const PublicInvitation: React.FC<Props> = ({
 
   const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!responsibleName.trim() || !whatsapp.trim()) {
-      alert('Por favor, preencha o Nome do Responsável e o WhatsApp.');
+    if (!responsibleName.trim()) {
+      alert('Por favor, preencha o Nome do responsável adulto (campo obrigatório).');
       return;
     }
 
     try {
       setSubmitting(true);
 
-      const safeAdults = Math.max(1, Number(adultsCount) || 1);
-      const safeChildren = Math.max(0, Number(childrenCount) || 0);
+      const validGuests = guestList.filter((g) => g.name && g.name.trim().length > 0);
+      const formattedGuestsNames = validGuests
+        .map((g) => {
+          const name = g.name.trim();
+          const age = g.age.trim();
+          if (!age) return name;
+          const ageStr = age.toLowerCase().includes('ano') ? age : `${age} anos`;
+          return `${name} (${ageStr})`;
+        })
+        .join(', ');
+
+      let additionalAdults = 0;
+      let additionalChildren = 0;
+      validGuests.forEach((g) => {
+        const ageNum = parseInt(g.age, 10);
+        if (!isNaN(ageNum) && ageNum < 18) {
+          additionalChildren++;
+        } else {
+          additionalAdults++;
+        }
+      });
+
+      const safeAdults = 1 + additionalAdults;
+      const safeChildren = additionalChildren;
       const famClean = familyOrGroup.trim() || responsibleName.trim();
+      const phoneClean = whatsapp.trim() || '+55 (11) 99999-9999';
+
+      const payload = {
+        responsibleName: responsibleName.trim(),
+        familyOrGroup: famClean,
+        condoName: famClean,
+        managerName: responsibleName.trim(),
+        janitorName: formattedGuestsNames,
+        guestsNames: formattedGuestsNames,
+        guestsList: validGuests,
+        adultsCount: safeAdults,
+        childrenCount: safeChildren,
+        specialNeeds: specialNeeds.trim(),
+        whatsapp: phoneClean
+      };
 
       if (mode === 'generic' || !invitation) {
         if (!event) throw new Error('Evento não carregado');
-        const res = await registerPublicInvitation(event.id, {
-          responsibleName: responsibleName.trim(),
-          familyOrGroup: famClean,
-          condoName: famClean,
-          managerName: responsibleName.trim(),
-          janitorName: guestsNames.trim(),
-          guestsNames: guestsNames.trim(),
-          adultsCount: safeAdults,
-          childrenCount: safeChildren,
-          specialNeeds: specialNeeds.trim(),
-          whatsapp: whatsapp.trim()
-        });
+        const res = await registerPublicInvitation(event.id, payload);
 
         setInvitation(res.invitation);
+        setGuestsNames(formattedGuestsNames);
+        setAdultsCount(safeAdults);
+        setChildrenCount(safeChildren);
         setShowSuccessCard(true);
         setShowDeclinedCard(false);
 
@@ -408,19 +506,13 @@ export const PublicInvitation: React.FC<Props> = ({
       } else {
         const res = await submitRsvp(invitation.code, {
           action: 'confirm',
-          responsibleName: responsibleName.trim(),
-          familyOrGroup: famClean,
-          condoName: famClean,
-          managerName: responsibleName.trim(),
-          janitorName: guestsNames.trim(),
-          guestsNames: guestsNames.trim(),
-          adultsCount: safeAdults,
-          childrenCount: safeChildren,
-          specialNeeds: specialNeeds.trim(),
-          whatsapp: whatsapp.trim()
+          ...payload
         });
 
         setInvitation(res.invitation);
+        setGuestsNames(formattedGuestsNames);
+        setAdultsCount(safeAdults);
+        setChildrenCount(safeChildren);
         setShowSuccessCard(true);
         setShowDeclinedCard(false);
 
@@ -468,6 +560,7 @@ export const PublicInvitation: React.FC<Props> = ({
     setResponsibleName('');
     setFamilyOrGroup('');
     setGuestsNames('');
+    setGuestList([]);
     setWhatsapp('');
     setSpecialNeeds('');
     setAdultsCount(1);
@@ -651,65 +744,216 @@ export const PublicInvitation: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Card Principal do Convite com degrade nos tons claros da logo Ativa */}
+        {/* Modo Switcher: Vídeo Convite vs Capa Digital */}
+        <div className="flex items-center justify-center gap-1.5 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-pink-200/90 shadow-xs max-w-xs mx-auto mb-1 z-20">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveView('video');
+              setIsVideoEnded(false);
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeView === 'video'
+                ? 'bg-pink-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-pink-600'
+            }`}
+          >
+            <Video size={14} />
+            <span>Vídeo Convite</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('cover')}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeView === 'cover'
+                ? 'bg-pink-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-pink-600'
+            }`}
+          >
+            <Sparkles size={14} />
+            <span>Capa Digital</span>
+          </button>
+        </div>
+
+        {/* Card Principal do Convite com degrade nos tons claros */}
         <div
-          className="w-full h-full min-h-[100dvh] sm:min-h-0 rounded-none sm:rounded-3xl overflow-hidden border-0 sm:border border-teal-200/90 shadow-none sm:shadow-2xl flex flex-col justify-center items-center relative"
+          className="w-full h-full min-h-[100dvh] sm:min-h-0 rounded-none sm:rounded-3xl overflow-hidden border-0 sm:border border-pink-200/90 shadow-none sm:shadow-2xl flex flex-col justify-center items-center relative"
           style={{
-            background: 'linear-gradient(155deg, #ffffff 0%, #f6fbfb 50%, #edf7f6 100%)'
+            background: 'linear-gradient(155deg, #ffffff 0%, #fff7fa 50%, #f0f9ff 100%)'
           }}
         >
-          {/* Arte / Capa Interativa Oficial com Hiperlinks Invisíveis */}
-          {event?.bannerUrl ? (
-            <div
-              className="w-full h-full min-h-[100dvh] sm:min-h-0 overflow-hidden flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(145deg, #e8f7f6 0%, #f4faf9 50%, #e1f4f2 100%)'
-              }}
-            >
-              <InteractiveCoverViewer
-                imageUrl={event.bannerUrl}
-                altText={event.title}
-                hotspots={effectiveHotspots}
-                showHotspotBorders={false}
-                interactive={true}
-                onActionTrigger={handleCoverActionTrigger}
-                className="w-full h-full min-h-[100dvh] sm:min-h-0"
-              />
-            </div>
-          ) : (
-            <div
-              className="p-6 sm:p-8 text-center border-b border-teal-100/90"
-              style={{
-                background: 'linear-gradient(145deg, #e4f5f4 0%, #f4faf9 50%, #ffffff 100%)'
-              }}
-            >
-              <span className="inline-block px-3 py-1 rounded-full bg-teal-100 text-[#007A78] font-bold text-xs uppercase tracking-wider mb-3 border border-teal-200">
-                Convite Oficial • Grupo Ativa
-              </span>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight">
-                {event?.title}
-              </h1>
-              {event?.description && (
-                <p className="text-slate-600 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
-                  {event.description}
+          {activeView === 'video' ? (
+            /* VÍDEO CONVITE PRINCIPAL DA LORENA */
+            <div className="w-full h-full min-h-[100dvh] sm:min-h-0 flex flex-col items-center justify-center relative bg-slate-950 overflow-hidden">
+              <div className="relative w-full max-w-[420px] aspect-[9/16] max-h-[85vh] flex items-center justify-center bg-black">
+                <video
+                  ref={videoRef}
+                  src={event?.videoUrl || '/covers/convite-lorena.mp4'}
+                  poster={event?.bannerUrl || '/covers/default-cover.png'}
+                  playsInline
+                  controls
+                  className="w-full h-full object-contain"
+                  onPlay={() => {
+                    setIsVideoPlaying(true);
+                    setIsVideoEnded(false);
+                  }}
+                  onPause={() => setIsVideoPlaying(false)}
+                  onEnded={() => {
+                    setIsVideoPlaying(false);
+                    setIsVideoEnded(true);
+                  }}
+                />
+
+                {/* Tela Final / Chamada Clara ao Terminar o Vídeo */}
+                {isVideoEnded && (
+                  <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-30 animate-in fade-in duration-300">
+                    <div className="w-14 h-14 rounded-full bg-pink-500/20 text-pink-400 border border-pink-400/40 flex items-center justify-center mb-3 shadow-lg animate-bounce">
+                      <Sparkles size={28} />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight">
+                      Você está convidado(a)! 🎂✨
+                    </h3>
+                    <p className="text-pink-100 text-sm sm:text-base font-bold mb-6 max-w-sm leading-snug">
+                      Abra o convite para confirmar sua presença e ver como chegar.
+                    </p>
+
+                    <div className="w-full max-w-xs space-y-3">
+                      <button
+                        type="button"
+                        onClick={openFullscreenForm}
+                        className="w-full py-3.5 px-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white rounded-2xl font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all border border-emerald-400/50"
+                      >
+                        <CheckCircle2 size={20} />
+                        <span>Confirmar presença</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                            `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
+                          )}`;
+                          window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="w-full py-3.5 px-5 bg-white/95 hover:bg-white active:scale-95 text-teal-900 rounded-2xl font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all border border-teal-200"
+                      >
+                        <MapPin size={20} className="text-teal-600" />
+                        <span>Como chegar</span>
+                      </button>
+
+                      <div className="flex items-center justify-center gap-4 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (videoRef.current) {
+                              videoRef.current.currentTime = 0;
+                              videoRef.current.play();
+                              setIsVideoEnded(false);
+                            }
+                          }}
+                          className="text-xs text-pink-200 hover:text-white flex items-center gap-1.5 underline cursor-pointer"
+                        >
+                          <RotateCcw size={13} />
+                          <span>Assistir novamente</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveView('cover')}
+                          className="text-xs text-pink-200 hover:text-white flex items-center gap-1.5 underline cursor-pointer"
+                        >
+                          <span>Ver capa digital</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chamada persistente abaixo do vídeo */}
+              <div className="w-full bg-slate-900/90 border-t border-slate-800 p-3 sm:p-4 text-center z-20">
+                <p className="text-pink-200 font-bold text-xs sm:text-sm mb-2.5">
+                  Abra o convite para confirmar sua presença e ver como chegar:
                 </p>
-              )}
-              <div className="mt-5">
-                <button
-                  type="button"
-                  onClick={openFullscreenForm}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-sm font-bold shadow-md cursor-pointer"
-                >
-                  <CheckCircle2 size={18} />
-                  <span>Confirmar presença</span>
-                </button>
+                <div className="flex items-center justify-center gap-2 max-w-sm mx-auto">
+                  <button
+                    type="button"
+                    onClick={openFullscreenForm}
+                    className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs sm:text-sm font-black shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-95"
+                  >
+                    <CheckCircle2 size={16} />
+                    <span>Confirmar presença</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                        `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
+                      )}`;
+                      window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="flex-1 py-2.5 px-3 bg-white/95 hover:bg-white text-teal-900 rounded-xl text-xs sm:text-sm font-black border border-teal-200 shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-95"
+                  >
+                    <MapPin size={16} className="text-teal-600" />
+                    <span>Como chegar</span>
+                  </button>
+                </div>
               </div>
             </div>
+          ) : (
+            /* CAPA DIGITAL INTERATIVA OFICIAL COM HIPERLINKS */
+            event?.bannerUrl ? (
+              <div
+                className="w-full h-full min-h-[100dvh] sm:min-h-0 overflow-hidden flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(145deg, #fff5f8 0%, #ffffff 50%, #f0f9ff 100%)'
+                }}
+              >
+                <InteractiveCoverViewer
+                  imageUrl={event.bannerUrl}
+                  altText={event.title}
+                  hotspots={effectiveHotspots}
+                  showHotspotBorders={false}
+                  interactive={true}
+                  onActionTrigger={handleCoverActionTrigger}
+                  className="w-full h-full min-h-[100dvh] sm:min-h-0"
+                />
+              </div>
+            ) : (
+              <div
+                className="p-6 sm:p-8 text-center border-b border-pink-100/90"
+                style={{
+                  background: 'linear-gradient(145deg, #fff0f5 0%, #ffffff 50%, #f0f9ff 100%)'
+                }}
+              >
+                <span className="inline-block px-3 py-1 rounded-full bg-pink-100 text-pink-700 font-bold text-xs uppercase tracking-wider mb-3 border border-pink-200">
+                  Convite Oficial • Aniversário da Lorena
+                </span>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 mb-2 tracking-tight">
+                  {event?.title}
+                </h1>
+                {event?.description && (
+                  <p className="text-slate-600 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+                    {event.description}
+                  </p>
+                )}
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    onClick={openFullscreenForm}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-sm font-bold shadow-md cursor-pointer"
+                  >
+                    <CheckCircle2 size={18} />
+                    <span>Confirmar presença</span>
+                  </button>
+                </div>
+              </div>
+            )
           )}
         </div>
 
         {/* Floating Quick Action Bar on Mobile for instant 1-tap confirmation */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 p-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-transparent flex items-center justify-center gap-2">
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 p-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-slate-950/95 via-slate-900/80 to-transparent flex items-center justify-center gap-2">
           <button
             type="button"
             onClick={openFullscreenForm}
@@ -722,7 +966,7 @@ export const PublicInvitation: React.FC<Props> = ({
             type="button"
             onClick={() => {
               const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
-                event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'
+                `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
               )}`;
               window.open(mapsUrl, '_blank', 'noopener,noreferrer');
             }}
@@ -755,6 +999,10 @@ export const PublicInvitation: React.FC<Props> = ({
         setFamilyOrGroup={setFamilyOrGroup}
         whatsapp={whatsapp}
         handlePhoneChange={handlePhoneChange}
+        guestList={guestList}
+        onAddGuest={handleAddGuest}
+        onRemoveGuest={handleRemoveGuest}
+        onGuestChange={handleGuestChange}
         guestsNames={guestsNames}
         setGuestsNames={setGuestsNames}
         adultsCount={adultsCount}

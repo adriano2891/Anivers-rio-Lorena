@@ -33,6 +33,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 
 // Serve uploaded static assets directly with permanent URL access
 app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/covers', express.static(path.join(process.cwd(), 'public', 'covers')));
 
 // Bulletproof fallback: If an uploaded file is not found (e.g. ephemeral disk after restart on Render),
 // NEVER return index.html! Serve the default cover image as PNG so the image never breaks
@@ -63,13 +64,13 @@ function generateShortCode(): string {
 
 const defaultTemplates = {
   confirmed:
-    'Olá, {Nome}! 🎉\n\nRecebemos com muita alegria a confirmação para o {Evento}!\nSerá maravilhoso celebrar esse momento especial com você e sua família.\n\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n📌 Endereço: {Endereco}\n\nEsperamos por vocês!',
+    'Olá, {Nome}! 🎉\n\nRecebemos com muita alegria a confirmação para o {Evento}!\nSerá maravilhoso celebrar esse momento especial com você e sua família.\n\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n📌 Endereço: {Endereco}\n\nEsperamos por vocês! ✨',
   viewedNotConfirmed:
-    'Olá, {Nome}! Tudo bem?\n\nPassando com carinho para lembrar do convite para o {Evento}.\n\nA presença de vocês tornará a festa da Lorena ainda mais encantadora!\n\nConfirme sua presença no link abaixo:\n{Link}\n\nQualquer dúvida estamos à disposição! 🎈',
+    'Olá, {Nome}! Tudo bem? 🌸\n\nPassando com carinho para lembrar do convite para o {Evento}.\n\nAssista ao vídeo e abra o convite para confirmar sua presença e ver como chegar:\n👉 {Link}\n\nQualquer dúvida estamos à disposição! 💕',
   notViewed:
-    'Olá, {Nome}! Você é nosso convidado de honra!\n\nPreparamos com muito amor o convite do {Evento}.\n\nPara conferir os detalhes e confirmar a presença de sua família, acesse:\n{Link}\n\nEsperamos você! 🎂✨',
+    'Olá, {Nome}! 🎂✨\n\nVocê e sua família são nossos convidados de honra para o {Evento}!\n\nAssista ao vídeo e abra o convite para confirmar sua presença e ver como chegar:\n👉 {Link}\n\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n📌 Endereço: {Endereco}\n\nEsperamos muito por vocês! 💖',
   reminder:
-    'Olá, {Nome}! O grande dia está chegando! 🎈\n\nLembramos que o {Evento} acontecerá em breve:\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n\nSeu passe com QR Code para entrada no dia:\n{Link}\n\nAté logo!',
+    'Olá, {Nome}! O grande dia está chegando! 🎈\n\nLembramos que o {Evento} acontecerá em breve:\n📅 Data: {Data}\n🕐 Horário: {Horario}\n📍 Local: {Local}\n📌 Endereço: {Endereco}\n\nAbra o convite para confirmar sua presença e ver como chegar:\n👉 {Link}\n\nNos vemos na festa! 🎉',
   thankYou:
     'Olá, {Nome}! Agradecemos imensamente a sua presença no {Evento}. Foi inesquecível ter vocês comemorando esse dia tão especial com a Lorena! 💖🎉'
 };
@@ -84,13 +85,14 @@ function getInitialData(): DatabaseSchema {
     title: 'Aniversário da Lorena',
     date: '2027-01-10',
     time: 'A partir das 16h',
-    location: 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos',
+    location: 'Salão Happy Day Kids',
     address: 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos',
     bannerUrl: '/covers/default-cover.png',
+    videoUrl: '/covers/convite-lorena.mp4',
     logoUrl: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=300&q=80',
-    presentationText: 'Bem-vindo ao Aniversário da Lorena! Confirme sua presença abaixo.',
-    shareTitle: 'Aniversário da Lorena | Confirmação de Presença',
-    shareDescription: 'Convite Especial - Aniversário da Lorena. Confirme sua presença.',
+    presentationText: 'Bem-vindo ao Aniversário da Lorena! Assista ao vídeo e confirme sua presença.',
+    shareTitle: 'Aniversário da Lorena (9 Anos) | Convite Especial',
+    shareDescription: 'Assista ao vídeo e abra o convite para confirmar sua presença e ver como chegar.',
     requireJanitor: false,
     maxParticipants: 150,
     confirmationDeadline: '2027-01-08',
@@ -112,7 +114,7 @@ function getInitialData(): DatabaseSchema {
         id: 'hs-2',
         name: 'Saber Como Chegar',
         actionType: 'google_maps',
-        targetUrl: 'https://maps.google.com/?q=Rua+Cachoeira%2C+n%C2%BA+34%2C+Jardim+Rosa+de+Fran%C3%A7a%2C+Guarulhos',
+        targetUrl: 'https://maps.google.com/?q=Sal%C3%A3o%20Happy%20Day%20Kids%2C%20Rua%20Cachoeira%2C%20n%C2%BA%2034%2C%20Jardim%20Rosa%20de%20Fran%C3%A7a%2C%20Guarulhos',
         openInNewTab: true,
         x: 51.4,
         y: 70.5,
@@ -678,6 +680,7 @@ app.post('/api/events/:id/public-register', (req, res) => {
     adultsCount,
     childrenCount,
     guestsNames,
+    guestsList,
     specialNeeds
   } = req.body;
 
@@ -753,6 +756,9 @@ app.post('/api/events/:id/public-register', (req, res) => {
     existingInv.managerName = resp;
     existingInv.janitorName = guestsDescription;
     existingInv.guestsNames = guestsDescription;
+    if (Array.isArray(guestsList)) {
+      existingInv.guestsList = guestsList;
+    }
     existingInv.adultsCount = adults;
     existingInv.childrenCount = children;
     existingInv.participantCount = participantCount;
@@ -814,6 +820,7 @@ app.post('/api/events/:id/public-register', (req, res) => {
     managerName: resp,
     janitorName: guestsDescription,
     guestsNames: guestsDescription,
+    guestsList: Array.isArray(guestsList) ? guestsList : [],
     adultsCount: adults,
     childrenCount: children,
     participantCount,
@@ -1293,6 +1300,7 @@ app.post('/api/invitations/by-code/:code/rsvp', (req, res) => {
     adultsCount,
     childrenCount,
     guestsNames,
+    guestsList,
     specialNeeds
   } = req.body;
   const invitation = db.invitations[invitationIndex];
@@ -1313,6 +1321,9 @@ app.post('/api/invitations/by-code/:code/rsvp', (req, res) => {
   if (guestsNames !== undefined) {
     invitation.guestsNames = guestsNames.trim();
     invitation.janitorName = guestsNames.trim();
+  }
+  if (Array.isArray(guestsList)) {
+    invitation.guestsList = guestsList;
   }
   if (specialNeeds !== undefined) {
     invitation.specialNeeds = specialNeeds.trim();

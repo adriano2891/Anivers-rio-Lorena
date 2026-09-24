@@ -195,17 +195,23 @@ export const InteractiveCoverViewer: React.FC<Props> = ({
           const isSelected = selectedHotspotId === spot.id;
           const isFeedback = activeFeedbackId === spot.id;
 
-          // In Guest Mode (showHotspotBorders = false): 100% invisible!
-          // No border, no background, no shadow. Instant 1-tap/1-click touch response.
+          // In Guest Mode (showHotspotBorders = false):
+          // Interactive button with pointer hand cursor, hover glow effect, animated badge and touch feedback
           if (!showHotspotBorders) {
+            const isRsvp =
+              spot.actionType === 'confirm_rsvp' ||
+              spot.actionType === 'open_form' ||
+              spot.targetUrl === '#formulario' ||
+              (spot.name && spot.name.toLowerCase().includes('confirm'));
+
             return (
               <button
                 key={spot.id}
                 type="button"
                 id={`hotspot-btn-${spot.id}`}
                 onClick={(e) => handleHotspotClick(e, spot)}
-                title={spot.name || 'Clique para interagir'}
-                aria-label={spot.name || 'Área interativa'}
+                title={spot.name || (isRsvp ? 'Confirmar Presença' : 'Saiba como chegar')}
+                aria-label={spot.name || (isRsvp ? 'Confirmar Presença' : 'Saiba como chegar')}
                 style={{
                   left: `${spot.x}%`,
                   top: `${spot.y}%`,
@@ -213,10 +219,20 @@ export const InteractiveCoverViewer: React.FC<Props> = ({
                   height: `${spot.height}%`,
                   touchAction: 'manipulation'
                 }}
-                className={`absolute cursor-pointer border-0 outline-none p-0 m-0 z-20 transition-opacity focus:outline-none ${
-                  isFeedback ? 'bg-teal-500/20' : 'bg-transparent'
+                className={`group absolute cursor-pointer rounded-2xl sm:rounded-full border border-transparent transition-all duration-200 outline-none p-0 m-0 z-20 focus:outline-none ${
+                  isFeedback
+                    ? 'bg-pink-500/30 ring-4 ring-pink-400 scale-[0.98]'
+                    : 'hover:bg-white/25 hover:border-pink-300/80 hover:ring-2 sm:hover:ring-4 hover:ring-pink-400/80 hover:shadow-[0_0_20px_rgba(244,114,182,0.65)] active:scale-95 active:bg-pink-500/30 active:ring-2 active:ring-pink-400'
                 }`}
-              />
+              >
+                {/* Visual indicator badge when hovering on desktop */}
+                <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] sm:text-xs font-bold py-1 px-2.5 rounded-lg whitespace-nowrap shadow-lg flex items-center gap-1.5 z-30 transform group-hover:-translate-y-0.5">
+                  <span className="inline-block animate-bounce text-xs">👆</span>
+                  <span>{spot.name || (isRsvp ? 'Clique para Confirmar Presença' : 'Clique para Saber Como Chegar')}</span>
+                </span>
+                {/* Subtle shimmer highlight on hover */}
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute inset-0 rounded-2xl sm:rounded-full pointer-events-none bg-gradient-to-r from-pink-400/15 via-white/20 to-pink-400/15 animate-pulse" />
+              </button>
             );
           }
 

@@ -5,6 +5,8 @@ import {
   X,
   ArrowLeft,
   User,
+  UserPlus,
+  Trash2,
   Phone,
   Users,
   MapPin,
@@ -17,9 +19,15 @@ import {
   Calendar,
   Clock
 } from 'lucide-react';
-import { CondoEvent, Invitation } from '../types';
+import { CondoEvent, Invitation, GuestPerson } from '../types';
 import { fireCelebrationConfetti } from '../lib/confetti';
 import { formatDateBR } from '../lib/utils';
+
+export interface GuestItem {
+  id: string;
+  name: string;
+  age: string;
+}
 
 interface FullscreenRsvpModalProps {
   isOpen: boolean;
@@ -37,12 +45,16 @@ interface FullscreenRsvpModalProps {
   setFamilyOrGroup: (val: string) => void;
   whatsapp: string;
   handlePhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  guestsNames: string;
-  setGuestsNames: (val: string) => void;
-  adultsCount: number;
-  setAdultsCount: React.Dispatch<React.SetStateAction<number>>;
-  childrenCount: number;
-  setChildrenCount: React.Dispatch<React.SetStateAction<number>>;
+  guestList: GuestItem[];
+  onAddGuest: () => void;
+  onRemoveGuest: (id: string) => void;
+  onGuestChange: (id: string, field: 'name' | 'age', value: string) => void;
+  guestsNames?: string;
+  setGuestsNames?: (val: string) => void;
+  adultsCount?: number;
+  setAdultsCount?: React.Dispatch<React.SetStateAction<number>>;
+  childrenCount?: number;
+  setChildrenCount?: React.Dispatch<React.SetStateAction<number>>;
   specialNeeds: string;
   setSpecialNeeds: (val: string) => void;
   availableSlots?: number;
@@ -68,11 +80,15 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
   setFamilyOrGroup,
   whatsapp,
   handlePhoneChange,
-  guestsNames,
+  guestList,
+  onAddGuest,
+  onRemoveGuest,
+  onGuestChange,
+  guestsNames = '',
   setGuestsNames,
-  adultsCount,
+  adultsCount = 1,
   setAdultsCount,
-  childrenCount,
+  childrenCount = 0,
   setChildrenCount,
   specialNeeds,
   setSpecialNeeds,
@@ -117,7 +133,8 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
 
   if (!isOpen) return null;
 
-  const totalPeople = Math.max(1, (Number(adultsCount) || 0) + (Number(childrenCount) || 0));
+  const validGuests = (guestList || []).filter((g) => g.name && g.name.trim().length > 0);
+  const totalPeople = Math.max(1, 1 + validGuests.length);
   const isCapacityReached = availableSlots <= 0;
   const isNearCapacity = availableSlots > 0 && availableSlots <= 20;
 
@@ -231,7 +248,7 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
               {invitation && (
                 <div className="bg-white/80 rounded-2xl p-4 border border-pink-100 text-left mb-5 space-y-2.5 text-xs sm:text-sm shadow-2xs">
                   <div className="flex items-center justify-between gap-2 py-1 border-b border-pink-100">
-                    <span className="text-slate-500 font-medium">Responsável:</span>
+                    <span className="text-slate-500 font-medium">Responsável adulto:</span>
                     <span className="font-bold text-slate-900 text-right truncate pl-2">
                       {invitation.responsibleName || invitation.managerName}
                     </span>
@@ -246,14 +263,37 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
                     </div>
                   )}
 
-                  {(invitation.guestsNames || invitation.janitorName) && (
+                  {/* Lista de convidados com Nome e Idade */}
+                  {validGuests && validGuests.length > 0 ? (
+                    <div className="py-1.5 border-b border-pink-100">
+                      <span className="text-slate-500 font-medium block mb-1">Convidados:</span>
+                      <div className="space-y-1 pl-1">
+                        {validGuests.map((g, idx) => (
+                          <div
+                            key={g.id || idx}
+                            className="flex items-center justify-between text-slate-800 text-xs font-semibold py-0.5"
+                          >
+                            <span className="flex items-center gap-1.5 truncate">
+                              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 shrink-0" />
+                              <span className="truncate">{g.name}</span>
+                            </span>
+                            {g.age && (
+                              <span className="text-pink-700 bg-pink-50 px-2 py-0.5 rounded-md text-[11px] font-bold border border-pink-200 shrink-0">
+                                {g.age.toLowerCase().includes('ano') ? g.age : `${g.age} anos`}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (invitation.guestsNames || invitation.janitorName) ? (
                     <div className="flex items-start justify-between gap-2 py-1 border-b border-pink-100">
-                      <span className="text-slate-500 font-medium shrink-0">Acompanhantes:</span>
+                      <span className="text-slate-500 font-medium shrink-0">Convidados:</span>
                       <span className="font-semibold text-slate-800 text-right pl-2">
                         {invitation.guestsNames || invitation.janitorName}
                       </span>
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="flex items-center justify-between gap-2 py-1 border-b border-pink-100">
                     <span className="text-slate-500 font-medium">Total de Pessoas:</span>
@@ -271,19 +311,30 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
                     </span>
                   </div>
 
-                  {event?.address && (
-                    <div className="flex items-start justify-between gap-2 py-1">
-                      <span className="text-slate-500 font-medium shrink-0">Local da Festa:</span>
-                      <span className="font-bold text-slate-900 text-right pl-2">
-                        {event.address}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-start justify-between gap-2 py-1">
+                    <span className="text-slate-500 font-medium shrink-0">Local da Festa:</span>
+                    <span className="font-bold text-slate-900 text-right pl-2">
+                      {event?.location ? `${event.location} • ` : ''}{event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}
+                    </span>
+                  </div>
                 </div>
               )}
 
               {/* Ações complementares */}
               <div className="flex flex-col sm:flex-row gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                      `${event?.location || 'Salão Happy Day Kids'}, ${event?.address || 'Rua Cachoeira, nº 34, Jardim Rosa de França, Guarulhos'}`
+                    )}`;
+                    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl transition shadow-xs text-xs sm:text-sm min-h-[44px] cursor-pointer"
+                >
+                  <MapPin size={16} />
+                  <span>Como chegar (Google Maps)</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => downloadCalendarFile(event)}
@@ -401,10 +452,10 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
               ) : null}
 
               <form id="rsvp-form" onSubmit={handleConfirm} className="space-y-3.5">
-                {/* 1. Nome do responsável */}
+                {/* 1. Nome do responsável adulto (campo obrigatório) */}
                 <div>
                   <label htmlFor="input-resp-name" className="block text-[11px] sm:text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
-                    Nome do Responsável <span className="text-rose-500">*</span>
+                    Nome do responsável adulto <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -416,7 +467,7 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
                       required
                       value={responsibleName}
                       onChange={(e) => setResponsibleName(e.target.value)}
-                      placeholder="Ex: Mariana Silva"
+                      placeholder="Nome completo do responsável adulto"
                       className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 sm:py-3 text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-xs sm:text-sm shadow-2xs min-h-[48px]"
                     />
                   </div>
@@ -445,7 +496,7 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
 
                   <div>
                     <label htmlFor="input-whatsapp" className="block text-[11px] sm:text-xs font-bold text-slate-900 uppercase tracking-wider mb-1 truncate">
-                      WhatsApp <span className="text-rose-500">*</span>
+                      WhatsApp do Responsável <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -464,96 +515,115 @@ export const FullscreenRsvpModal: React.FC<FullscreenRsvpModalProps> = ({
                   </div>
                 </div>
 
-                {/* 3. Convidados / Acompanhantes */}
-                <div>
-                  <label htmlFor="input-guests-names" className="block text-[11px] sm:text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
-                    Nome dos Acompanhantes / Convidados
-                  </label>
-                  <input
-                    id="input-guests-names"
-                    type="text"
-                    value={guestsNames}
-                    onChange={(e) => setGuestsNames(e.target.value)}
-                    placeholder="Ex: Mariana, Carlos, Dudu e Alice"
-                    className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 sm:py-3 text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-xs sm:text-sm shadow-2xs min-h-[48px]"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Liste os nomes das pessoas que virão com você.
-                  </p>
-                </div>
-
-                {/* 4. Quantidade de Adultos e Crianças */}
-                <div className="bg-white border border-pink-200 rounded-2xl p-4 space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                    <span className="flex items-center gap-1.5 text-pink-700">
-                      <Users size={15} /> Quantidade de Pessoas
-                    </span>
-                    <span className="text-pink-600 font-black bg-pink-50 px-2.5 py-0.5 rounded-lg border border-pink-200">
-                      Total: {totalPeople} {totalPeople === 1 ? 'pessoa' : 'pessoas'}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
+                {/* 3. Seção Convidados: nome e idade de cada pessoa */}
+                <div className="bg-white border border-pink-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-pink-100">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Adultos
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setAdultsCount((prev) => Math.max(1, prev - 1))}
-                          className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 font-black hover:bg-pink-100 flex items-center justify-center cursor-pointer text-base"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          min={1}
-                          max={15}
-                          value={adultsCount}
-                          onChange={(e) => setAdultsCount(Math.max(1, parseInt(e.target.value) || 1))}
-                          className="w-full bg-slate-50 border border-pink-200 rounded-xl py-1.5 text-center font-bold text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 min-h-[38px]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setAdultsCount((prev) => prev + 1)}
-                          className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 font-black hover:bg-pink-100 flex items-center justify-center cursor-pointer text-base"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                        <Users size={16} className="text-pink-600" />
+                        <span>Convidados</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Cadastre o nome e a idade de cada pessoa que acompanhará você.
+                      </p>
                     </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1">
-                        <Baby size={13} className="text-pink-600" /> Crianças
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setChildrenCount((prev) => Math.max(0, prev - 1))}
-                          className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 font-black hover:bg-pink-100 flex items-center justify-center cursor-pointer text-base"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          min={0}
-                          max={15}
-                          value={childrenCount}
-                          onChange={(e) => setChildrenCount(Math.max(0, parseInt(e.target.value) || 0))}
-                          className="w-full bg-slate-50 border border-pink-200 rounded-xl py-1.5 text-center font-bold text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 min-h-[38px]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setChildrenCount((prev) => prev + 1)}
-                          className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 text-pink-700 font-black hover:bg-pink-100 flex items-center justify-center cursor-pointer text-base"
-                        >
-                          +
-                        </button>
-                      </div>
+                    <div className="text-[11px] font-bold text-pink-700 bg-pink-50 px-2.5 py-1 rounded-lg border border-pink-200 w-fit">
+                      {validGuests.length === 0
+                        ? '1 responsável adulto'
+                        : `Total: ${totalPeople} ${totalPeople === 1 ? 'pessoa' : 'pessoas'} (1 responsável + ${validGuests.length} ${validGuests.length === 1 ? 'convidado' : 'convidados'})`}
                     </div>
                   </div>
+
+                  {/* Lista Dinâmica de Convidados */}
+                  {guestList.length === 0 ? (
+                    <div className="text-center py-3.5 px-3 bg-pink-50/40 rounded-xl border border-dashed border-pink-200">
+                      <p className="text-xs text-slate-600 font-medium">
+                        Nenhum convidado adicional cadastrado.
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Clique no botão abaixo para adicionar acompanhantes.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {guestList.map((guest, index) => (
+                        <div
+                          key={guest.id}
+                          className="p-3 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl transition shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-[11px] font-extrabold text-pink-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center text-[10px] font-black">
+                                {index + 1}
+                              </span>
+                              <span>Convidado {index + 1}</span>
+                            </span>
+
+                            {/* Botão Remover */}
+                            <button
+                              type="button"
+                              onClick={() => onRemoveGuest(guest.id)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 active:bg-rose-100 px-2 py-1 rounded-lg transition border border-transparent hover:border-rose-200 cursor-pointer"
+                              title="Remover convidado"
+                              aria-label={`Remover convidado ${index + 1}`}
+                            >
+                              <Trash2 size={13} />
+                              <span>Remover</span>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {/* Campo Nome */}
+                            <div className="sm:col-span-2">
+                              <label
+                                htmlFor={`guest-name-${guest.id}`}
+                                className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1"
+                              >
+                                Nome
+                              </label>
+                              <input
+                                id={`guest-name-${guest.id}`}
+                                type="text"
+                                value={guest.name}
+                                onChange={(e) => onGuestChange(guest.id, 'name', e.target.value)}
+                                placeholder="Nome do convidado"
+                                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-xs sm:text-sm min-h-[40px]"
+                              />
+                            </div>
+
+                            {/* Campo Idade */}
+                            <div>
+                              <label
+                                htmlFor={`guest-age-${guest.id}`}
+                                className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1"
+                              >
+                                Idade
+                              </label>
+                              <input
+                                id={`guest-age-${guest.id}`}
+                                type="text"
+                                value={guest.age}
+                                onChange={(e) => onGuestChange(guest.id, 'age', e.target.value)}
+                                placeholder="Ex: 8 anos"
+                                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-xs sm:text-sm min-h-[40px]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Botão Adicionar Convidado */}
+                  <button
+                    type="button"
+                    id="btn-adicionar-convidado"
+                    onClick={onAddGuest}
+                    className="w-full py-2.5 px-4 bg-pink-50 hover:bg-pink-100 active:bg-pink-200 text-pink-700 font-extrabold rounded-xl border border-dashed border-pink-300 transition text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-2xs min-h-[42px]"
+                  >
+                    <UserPlus size={16} />
+                    <span>Adicionar convidado</span>
+                  </button>
                 </div>
 
                 {/* 5. Observações e necessidades especiais */}

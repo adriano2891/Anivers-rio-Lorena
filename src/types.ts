@@ -66,6 +66,7 @@ export interface CondoEvent {
   location: string;
   address: string;
   bannerUrl: string;
+  videoUrl?: string;
   logoUrl: string;
   presentationText: string;
   shareImageUrl?: string;
@@ -82,6 +83,12 @@ export interface CondoEvent {
   updatedAt: string;
 }
 
+export interface GuestPerson {
+  id: string;
+  name: string;
+  age: string;
+}
+
 export interface Invitation {
   id: string;
   code: string;
@@ -90,6 +97,7 @@ export interface Invitation {
   responsibleName?: string;
   familyOrGroup?: string;
   guestsNames?: string;
+  guestsList?: GuestPerson[];
   adultsCount?: number;
   childrenCount?: number;
   specialNeeds?: string;

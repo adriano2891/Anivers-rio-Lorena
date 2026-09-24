@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MessageSquare, Send, CheckCircle2, Eye, HelpCircle, Bell, Heart, Copy, Check } from 'lucide-react';
+import { X, MessageSquare, Send, CheckCircle2, Eye, HelpCircle, Bell, Heart, Copy, Check, Video, Download } from 'lucide-react';
 import { Invitation, CondoEvent } from '../types';
 import { getWhatsAppMessage, openWhatsApp, formatPhone } from '../lib/utils';
 import { logWhatsAppOpened } from '../lib/api';
@@ -80,13 +80,38 @@ export const WhatsAppModal: React.FC<Props> = ({
           </div>
           <h2 className="text-xl font-bold text-slate-900">Disparar Mensagem via WhatsApp</h2>
         </div>
-        <p className="text-slate-500 text-xs mb-4">
+        <p className="text-slate-500 text-xs mb-3">
           Para: <strong className="text-slate-800">{invitation.responsibleName || invitation.managerName}</strong>
           {(invitation.familyOrGroup || invitation.condoName) && (
             <span> • {invitation.familyOrGroup || invitation.condoName}</span>
           )}{' '}
           ({formatPhone(invitation.whatsapp)})
         </p>
+
+        {/* Video Sharing Banner */}
+        <div className="bg-pink-50 border border-pink-200 rounded-xl p-3 mb-3 text-xs text-pink-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-2xs">
+          <div className="flex items-start gap-2">
+            <div className="p-1.5 bg-pink-600 text-white rounded-lg shrink-0 mt-0.5 sm:mt-0">
+              <Video size={14} />
+            </div>
+            <div>
+              <p className="font-bold text-pink-900 leading-tight">
+                Fluxo com Vídeo Convite da Lorena
+              </p>
+              <p className="text-[11px] text-pink-800/90 leading-tight mt-0.5">
+                Envie o vídeo da Lorena junto com esta mensagem. O link abaixo abre a capa digital interativa para confirmar presença e abrir o Google Maps!
+              </p>
+            </div>
+          </div>
+          <a
+            href={event.videoUrl || '/covers/convite-lorena.mp4'}
+            download="convite-lorena.mp4"
+            className="shrink-0 px-3 py-1.5 bg-white hover:bg-pink-100 text-pink-700 font-bold rounded-lg border border-pink-300 text-xs flex items-center gap-1.5 shadow-2xs transition"
+          >
+            <Download size={13} />
+            <span>Baixar Vídeo (.mp4)</span>
+          </a>
+        </div>
 
         {/* Template Selector Tabs */}
         <div className="flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 mb-4">
